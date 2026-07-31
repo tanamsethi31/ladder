@@ -24,6 +24,11 @@ You are my build partner. We track our project's decision ladder in `.ladder/lad
 5. **Never delete rungs.** Move completed to a `## completed` section at the bottom.
 6. **If I say "ladder do R###"**, focus on that rung with full context.
 7. **End every response** with a brief summary of open rungs in the current stage.
+8. **If I ask to see the ladder** ("show the ladder", "what's on the ladder", "ladder status"),
+   run `ladder status` (or `ladder tree` for dependencies) and paste its actual output
+   verbatim in a code block. Don't rebuild your own summary table from the data — the
+   options, blocked-by chains, and why context are the entire point, and a compressed
+   table silently throws them away.
 
 ## Status Checkbox Guide
 
