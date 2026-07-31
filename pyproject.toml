@@ -13,7 +13,7 @@ readme = "README.md"
 license = {text = "MIT"}
 requires-python = ">=3.10"
 authors = [
-    {name = "Your Name", email = "you@example.com"},
+    {name = "Tanam Sethi", email = "sethit@tcd.ie"},
 ]
 keywords = ["cli", "ai", "productivity", "developer-tools", "project-management"]
 classifiers = [
@@ -47,9 +47,9 @@ dev = [
 ladder = "ladder.cli:app"
 
 [project.urls]
-Homepage = "https://github.com/yourname/ladder"
-Repository = "https://github.com/yourname/ladder"
-Issues = "https://github.com/yourname/ladder/issues"
+Homepage = "https://github.com/tanamsethi31/ladder"
+Repository = "https://github.com/tanamsethi31/ladder"
+Issues = "https://github.com/tanamsethi31/ladder/issues"
 
 [tool.ruff]
 line-length = 100
