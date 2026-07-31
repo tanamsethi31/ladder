@@ -80,6 +80,27 @@ def test_parse_ladder_with_new_statuses(tmp_path: Path) -> None:
     assert r004.status == Status.ABANDONED
 
 
+def test_in_progress_status_roundtrip(tmp_path: Path) -> None:
+    ladder_file = tmp_path / "ladder.md"
+    ladder_file.write_text(
+        "---\nproject: Test\nversion: 1\n---\n\n"
+        "## core\n\n"
+        "- [▶] **R001** — Build the thing → *medium*\n"
+        "  - Why: Doing it now\n"
+    )
+
+    ladder = parse_ladder(ladder_file)
+    rung = ladder.get_rung("R001")
+    assert rung is not None
+    assert rung.status == Status.IN_PROGRESS
+
+    # Round-trip: write it back out and re-parse - status must survive.
+    write_ladder(ladder_file, ladder)
+    reparsed_rung = parse_ladder(ladder_file).get_rung("R001")
+    assert reparsed_rung is not None
+    assert reparsed_rung.status == Status.IN_PROGRESS
+
+
 def test_generate_and_roundtrip(tmp_path: Path) -> None:
     ladder_file = tmp_path / "ladder.md"
     ladder_file.write_text(SAMPLE_LADDER)

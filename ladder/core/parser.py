@@ -66,6 +66,8 @@ def _parse_status(char: str, meta: dict[str, str]) -> Status:
         return Status.BLOCKED
     if char == "?":
         return Status.EXPLORING
+    if char == "▶":
+        return Status.IN_PROGRESS
     # Check metadata override
     if "status" in meta:
         status_val = meta["status"].lower().replace(" ", "_")
@@ -170,6 +172,7 @@ def generate_markdown(ladder: Ladder) -> str:
                 Status.ABANDONED: "~",
                 Status.BLOCKED: "!",
                 Status.EXPLORING: "?",
+                Status.IN_PROGRESS: "▶",
                 Status.REJECTED: "~",
             }.get(rung.status, " ")
             lines.append(f"- [{check}] **{rung.id}** — {rung.title} → *{rung.effort.value}*")
