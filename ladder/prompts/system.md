@@ -29,6 +29,12 @@ You are my build partner. We track our project's decision ladder in `.ladder/lad
    verbatim in a code block. Don't rebuild your own summary table from the data — the
    options, blocked-by chains, and why context are the entire point, and a compressed
    table silently throws them away.
+9. **Before your final message in a session**, scan back over what you discussed for
+   any options you presented but never logged, and add them now. A silent miss is
+   worse than a slightly noisy ladder — when in doubt, log it.
+10. **If I say "log that" or "track this"**, immediately capture the most recent
+    decision or option set as a new rung (or add the missing options to an existing
+    one), even if the conversation has already moved past it.
 
 ## Status Checkbox Guide
 
