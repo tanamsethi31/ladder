@@ -19,7 +19,7 @@ def test_init() -> None:
 
 
 def test_status() -> None:
-    with runner.isolated_filesystem() as td:
+    with runner.isolated_filesystem():
         runner.invoke(app, ["init"])
         result = runner.invoke(app, ["status"])
         assert result.exit_code == 0
@@ -29,13 +29,21 @@ def test_status() -> None:
 def test_add() -> None:
     with runner.isolated_filesystem() as td:
         runner.invoke(app, ["init"])
-        result = runner.invoke(app, [
-            "add", "New Feature",
-            "--stage", "core",
-            "--effort", "medium",
-            "--context", "Testing add",
-            "--why", "Because",
-        ])
+        result = runner.invoke(
+            app,
+            [
+                "add",
+                "New Feature",
+                "--stage",
+                "core",
+                "--effort",
+                "medium",
+                "--context",
+                "Testing add",
+                "--why",
+                "Because",
+            ],
+        )
         assert result.exit_code == 0
         assert "Added R003" in result.output
 
@@ -54,7 +62,7 @@ def test_add_invalid_effort() -> None:
 
 
 def test_next() -> None:
-    with runner.isolated_filesystem() as td:
+    with runner.isolated_filesystem():
         runner.invoke(app, ["init"])
         # R001 and R002 exist from init
         result = runner.invoke(app, ["next"])

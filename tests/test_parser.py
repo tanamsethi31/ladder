@@ -2,11 +2,8 @@
 
 from pathlib import Path
 
-import pytest
-
-from ladder.core.models import Effort, Ladder, Rung, Stage, Status
+from ladder.core.models import Effort, Rung, Status
 from ladder.core.parser import generate_markdown, parse_ladder, write_ladder
-
 
 SAMPLE_LADDER = """---
 project: Test Project

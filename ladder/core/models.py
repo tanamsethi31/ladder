@@ -47,10 +47,12 @@ class Rung(BaseModel):
     why: str = ""
     options: list[Option] = Field(default_factory=list)
     blocked_by: list[str] = Field(default_factory=list)
-    parent: Optional[str] = None
+    # Optional[X], not X | None: pydantic evals these at class-definition time
+    # even with `from __future__ import annotations`, which breaks on Python <3.10.
+    parent: Optional[str] = None  # noqa: UP045
     note: str = ""
-    created_at: Optional[datetime] = None
-    completed_at: Optional[datetime] = None
+    created_at: Optional[datetime] = None  # noqa: UP045
+    completed_at: Optional[datetime] = None  # noqa: UP045
 
     @property
     def is_done(self) -> bool:
@@ -66,10 +68,7 @@ class Rung(BaseModel):
             return True
         if all_rung_ids is None:
             return True  # cannot determine without full context
-        for blocker in self.blocked_by:
-            if blocker not in all_rung_ids:
-                return False  # blocker doesn't exist
-        return True
+        return all(blocker in all_rung_ids for blocker in self.blocked_by)
 
 
 class Stage(BaseModel):
@@ -130,13 +129,13 @@ class Ladder(BaseModel):
     def blocked_count(self) -> int:
         return sum(1 for r in self.all_rungs if r.status == Status.BLOCKED)
 
-    def get_rung(self, rung_id: str) -> Optional[Rung]:
+    def get_rung(self, rung_id: str) -> Rung | None:
         for rung in self.all_rungs:
             if rung.id == rung_id:
                 return rung
         return None
 
-    def get_stage_for_rung(self, rung_id: str) -> Optional[Stage]:
+    def get_stage_for_rung(self, rung_id: str) -> Stage | None:
         for stage in self.stages:
             for rung in stage.rungs:
                 if rung.id == rung_id:

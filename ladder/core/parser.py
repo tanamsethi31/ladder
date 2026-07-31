@@ -47,7 +47,9 @@ def _extract_options(text: str) -> list[Option]:
         checked = match.group(1).lower() == "x"
         option_text = match.group(2).strip()
         # Skip metadata lines that accidentally match
-        if option_text.lower().startswith(("context:", "why:", "blocked by:", "parent:", "note:", "status:")):
+        if option_text.lower().startswith(
+            ("context:", "why:", "blocked by:", "parent:", "note:", "status:")
+        ):
             continue
         options.append(Option(text=option_text, chosen=checked))
     return options
@@ -74,7 +76,7 @@ def _parse_status(char: str, meta: dict[str, str]) -> Status:
     return Status.OPEN
 
 
-def _parse_rung(match: re.Match, body_text: str) -> Rung:
+def _parse_rung(match: re.Match[str], body_text: str) -> Rung:
     """Parse a single rung from regex match and body text."""
     check_char = match.group(1)
     rung_id = match.group(2)
@@ -124,7 +126,7 @@ def parse_ladder(path: Path) -> Ladder:
                         version = int(line.split(":", 1)[1].strip())
                     except ValueError:
                         version = 1
-            content = content[front_end + 3:]
+            content = content[front_end + 3 :]
 
     # Find stage boundaries
     stage_matches = list(STAGE_RE.finditer(content))

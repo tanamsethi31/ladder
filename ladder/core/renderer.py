@@ -56,7 +56,12 @@ def _rung_style(rung: Rung) -> str:
     return "white"
 
 
-def render_status(ladder: Ladder, console: Console | None = None, filter_stage: str | None = None, filter_effort: str | None = None) -> None:
+def render_status(
+    ladder: Ladder,
+    console: Console | None = None,
+    filter_stage: str | None = None,
+    filter_effort: str | None = None,
+) -> None:
     """Render the full ladder status to the terminal."""
     if console is None:
         console = Console()
@@ -155,7 +160,10 @@ def render_tree(ladder: Ladder, console: Console | None = None) -> None:
             emoji = _status_emoji(rung.status)
             effort_color = _effort_style(rung.effort.value)
             style = _rung_style(rung)
-            label = f"{emoji} [bold]{rung.id}[/bold] [{style}]{rung.title}[/{style}] → [{effort_color}]{rung.effort.value}[/{effort_color}]"
+            label = (
+                f"{emoji} [bold]{rung.id}[/bold] [{style}]{rung.title}[/{style}] → "
+                f"[{effort_color}]{rung.effort.value}[/{effort_color}]"
+            )
             rung_node = stage_node.add(label)
 
             if rung.blocked_by:
@@ -231,10 +239,6 @@ def render_next_suggestions(rungs: list[Rung], console: Console | None = None) -
 
     for i, rung in enumerate(rungs[:5], 1):
         effort_color = _effort_style(rung.effort.value)
-        stage_name = ""
-        # Find stage name
-        # We don't have ladder here, so we can't look it up easily
-        # Just show the rung
         line = Text()
         line.append(f"{i}. ", style="bold")
         line.append(f"{rung.id}  ", style="dim")
@@ -248,7 +252,9 @@ def render_next_suggestions(rungs: list[Rung], console: Console | None = None) -
         console.print()
 
 
-def render_validation(errors: list[str], warnings: list[str], console: Console | None = None) -> None:
+def render_validation(
+    errors: list[str], warnings: list[str], console: Console | None = None
+) -> None:
     """Render validation results."""
     if console is None:
         console = Console()

@@ -6,6 +6,7 @@ from pathlib import Path
 
 try:
     import git
+
     HAS_GIT = True
 except ImportError:
     HAS_GIT = False

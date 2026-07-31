@@ -117,7 +117,9 @@ def init(
 @app.command()
 def status(
     stage: str = typer.Option(None, "--stage", "-s", help="Filter by stage name"),
-    effort: str = typer.Option(None, "--effort", "-e", help="Filter by effort (small/medium/large)"),
+    effort: str = typer.Option(
+        None, "--effort", "-e", help="Filter by effort (small/medium/large)"
+    ),
 ) -> None:
     """Show the full project ladder."""
     _, ladder = _load_ladder()
@@ -142,7 +144,9 @@ def add(
     effort: str = typer.Option("medium", "--effort", "-e", help="Effort: small, medium, large"),
     context: str = typer.Option("", "--context", "-c", help="What this rung is about"),
     why: str = typer.Option("", "--why", "-w", help="Why this matters"),
-    blocked_by: str = typer.Option("", "--blocked-by", "-b", help="Comma-separated rung IDs that block this"),
+    blocked_by: str = typer.Option(
+        "", "--blocked-by", "-b", help="Comma-separated rung IDs that block this"
+    ),
     parent: str = typer.Option(None, "--parent", help="Parent rung ID"),
 ) -> None:
     """Add a new rung to the ladder."""
@@ -153,7 +157,7 @@ def add(
         effort_enum = Effort(effort.lower())
     except ValueError:
         console.print(f"[red]Invalid effort: {effort}. Use small, medium, or large.[/red]")
-        raise typer.Exit(1)
+        raise typer.Exit(1) from None
 
     # Generate next ID
     rung_id = ladder.next_rung_id()
@@ -219,7 +223,7 @@ def next() -> None:
         return
 
     # Sort by: current stage first, then effort (small → medium → large), then by ID
-    def sort_key(rung: Rung) -> tuple:
+    def sort_key(rung: Rung) -> tuple[int, int, str]:
         # Find stage index
         for i, stage in enumerate(ladder.stages):
             if rung in stage.rungs:
@@ -271,7 +275,11 @@ def validate() -> None:
                     errors.append(f"Circular dependency: {rung.id} ↔ {blocker}")
 
             # Status vs checkbox mismatch
-            if rung.status == Status.DONE and rung.options and not any(o.chosen for o in rung.options):
+            if (
+                rung.status == Status.DONE
+                and rung.options
+                and not any(o.chosen for o in rung.options)
+            ):
                 warnings.append(f"{rung.id}: marked done but no option chosen")
 
             # Blocked but no blockers
