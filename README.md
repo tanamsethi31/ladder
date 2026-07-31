@@ -5,6 +5,8 @@
 [![Python](https://img.shields.io/pypi/pyversions/ladder-cli)](https://pypi.org/project/ladder-cli/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
+[![Email](https://img.shields.io/badge/email-sethit%40tcd.ie-blue?logo=gmail&logoColor=white)](mailto:sethit@tcd.ie)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-tanamsethi-blue?logo=linkedin&logoColor=white)](https://linkedin.com/in/tanamsethi)
 
 > Track every branch, stage, and alternative path in your AI pair-programming sessions.
 
