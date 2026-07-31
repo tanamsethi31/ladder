@@ -381,7 +381,7 @@ def prompt() -> None:
     """Print the system prompt to paste into your AI assistant."""
     prompt_path = Path(__file__).parent / "prompts" / "system.md"
     if prompt_path.exists():
-        console.print(prompt_path.read_text())
+        console.print(prompt_path.read_text(), markup=False, highlight=False)
     else:
         console.print("[red]Prompt file not found[/red]")
 
