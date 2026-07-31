@@ -141,6 +141,7 @@ Small, well-understood work sorted ahead of bigger bets, automatically.
 ## Contact
 
 [![Email](https://img.shields.io/badge/email-sethit%40tcd.ie-blue?logo=gmail&logoColor=white)](mailto:sethit@tcd.ie)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-tanamsethi-blue?logo=linkedin&logoColor=white)](https://linkedin.com/in/tanamsethi)
 
 Built by [Tanam Sethi](https://github.com/tanamsethi31). Questions, bug reports, or feature requests — open an [issue](https://github.com/tanamsethi31/ladder/issues) or reach out directly.
 

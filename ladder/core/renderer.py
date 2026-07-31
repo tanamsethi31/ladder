@@ -111,6 +111,12 @@ def render_status(
         if filter_stage and stage.name != filter_stage.lower():
             continue
 
+        visible_rungs = [
+            r for r in stage.rungs if not filter_effort or r.effort.value == filter_effort.lower()
+        ]
+        if not visible_rungs:
+            continue
+
         dot = _stage_dot(stage)
         dot_style = {
             "●": "green",
@@ -120,31 +126,49 @@ def render_status(
         }.get(dot, "dim")
 
         console.print(Text(f"{dot} {stage.name}", style=f"bold {dot_style}"))
-
-        for rung in stage.rungs:
-            if filter_effort and rung.effort.value != filter_effort.lower():
-                continue
-
-            emoji = _status_emoji(rung.status)
-            effort_color = _effort_style(rung.effort.value)
-            rung_style = _rung_style(rung)
-
-            line = Text()
-            line.append(f"  {emoji} ", style="dim")
-            line.append(f"{rung.id}  ", style="dim")
-            line.append(rung.title, style=rung_style)
-            line.append(f"  → {rung.effort.value}", style=effort_color)
-
-            if rung.blocked_by:
-                blockers = ", ".join(rung.blocked_by)
-                line.append(f"  [blocked by {blockers}]", style="red dim")
-
-            console.print(line)
-
-            if rung.why and not rung.is_done:
-                console.print(Text(f"     {rung.why}", style="dim italic"))
-
         console.print()
+        console.print(_render_rung_table(visible_rungs))
+        console.print()
+
+
+def _render_rung_table(rungs: list[Rung]) -> Table:
+    """A table of rungs, one row each, with alternative options nested inside the row."""
+    table = Table(box=box.SIMPLE_HEAD, show_edge=False, pad_edge=False, expand=False)
+    table.add_column("", width=1)
+    table.add_column("Rung", ratio=1)
+    table.add_column("Effort", justify="right")
+
+    for rung in rungs:
+        emoji = _status_emoji(rung.status)
+        effort_color = _effort_style(rung.effort.value)
+        rung_style = _rung_style(rung)
+
+        body = Text()
+        body.append(f"{rung.id}  ", style="dim")
+        body.append(rung.title, style=rung_style)
+        if rung.blocked_by:
+            body.append(f"  [blocked by {', '.join(rung.blocked_by)}]", style="red dim")
+
+        if rung.why and not rung.is_done:
+            body.append("\n   ")
+            body.append(rung.why, style="dim italic")
+
+        for opt in rung.options:
+            body.append("\n   ")
+            if opt.chosen:
+                body.append("✓ ", style="bold green")
+                body.append(opt.text, style="green")
+            else:
+                body.append("○ ", style="dim")
+                body.append(opt.text, style="dim")
+
+        table.add_row(
+            Text(emoji, style=rung_style),
+            body,
+            Text(rung.effort.value, style=effort_color),
+        )
+
+    return table
 
 
 def render_tree(ladder: Ladder, console: Console | None = None) -> None:
@@ -173,6 +197,10 @@ def render_tree(ladder: Ladder, console: Console | None = None) -> None:
                 rung_node.add(f"[dim]← parent: {rung.parent}[/dim]")
             if rung.why:
                 rung_node.add(f"[dim italic]↳ {rung.why}[/dim italic]")
+            for opt in rung.options:
+                mark = "[bold green]✓[/bold green]" if opt.chosen else "[dim]○[/dim]"
+                text_style = "green" if opt.chosen else "dim"
+                rung_node.add(f"{mark} [{text_style}]{opt.text}[/{text_style}]")
 
     console.print(root)
 
@@ -249,6 +277,12 @@ def render_next_suggestions(rungs: list[Rung], console: Console | None = None) -
             console.print(Text(f"   {rung.why}", style="dim italic"))
         if rung.blocked_by:
             console.print(Text(f"   [will unblock: {', '.join(rung.blocked_by)}]", style="dim"))
+        for opt in rung.options:
+            mark, mark_style = ("✓", "bold green") if opt.chosen else ("○", "dim")
+            line = Text("   ")
+            line.append(f"{mark} ", style=mark_style)
+            line.append(opt.text, style="green" if opt.chosen else "dim")
+            console.print(line)
         console.print()
 
 
