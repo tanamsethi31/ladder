@@ -14,6 +14,8 @@ When pair-programming with AI, every decision presents multiple paths. You pick 
 
 **Ladder captures every branch, stages them by effort, and lets you climb back to any rung.**
 
+![Ladder demo](assets/demo.gif)
+
 ## Install
 
 ```bash
