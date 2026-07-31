@@ -7,11 +7,11 @@ packages = ["ladder"]
 
 [project]
 name = "ladder-cli"
-version = "0.1.0"
+version = "0.1.1"
 description = "Track every branch, stage, and alternative path in your AI pair-programming sessions."
 readme = "README.md"
 license = {text = "MIT"}
-requires-python = ">=3.10"
+requires-python = ">=3.9"
 authors = [
     {name = "Tanam Sethi", email = "sethit@tcd.ie"},
 ]
@@ -22,6 +22,7 @@ classifiers = [
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
