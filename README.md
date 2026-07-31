@@ -1,5 +1,11 @@
 # 🪜 Ladder
 
+[![PyPI](https://img.shields.io/pypi/v/ladder-cli)](https://pypi.org/project/ladder-cli/)
+[![CI](https://github.com/tanamsethi31/ladder/actions/workflows/ci.yml/badge.svg)](https://github.com/tanamsethi31/ladder/actions/workflows/ci.yml)
+[![Python](https://img.shields.io/pypi/pyversions/ladder-cli)](https://pypi.org/project/ladder-cli/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
+
 > Track every branch, stage, and alternative path in your AI pair-programming sessions.
 
 When pair-programming with AI, every decision presents multiple paths. You pick one. The others vanish into scrollback. Three hours later, you realize you needed that other path too.
@@ -61,6 +67,49 @@ version: 1
 - ✅ **Human-friendly** — open in any editor, understand in 30 seconds
 - ✅ **CLI-friendly** — trivial to parse and render
 
+## Architecture
+
+```mermaid
+flowchart LR
+    Dev["Developer"] -->|ladder init| Dir[".ladder/"]
+    Dev -->|ladder prompt| Prompt["System prompt"]
+    Prompt -->|pasted into| AI["Any AI assistant\nClaude, GPT-4, Cursor, Copilot"]
+    AI <-->|reads / writes| File[".ladder/ladder.md\nMarkdown + YAML"]
+    Dir --> File
+    CLI["ladder CLI\nstatus · next · add · tree · validate"] <--> File
+    Dev -->|runs| CLI
+```
+
+No API calls, no plugin, no server — the markdown file *is* the interface between you, the CLI, and whatever AI you're using.
+
+## Real output
+
+This project dogfoods itself — its own `.ladder/ladder.md` tracks its own roadmap:
+
+```
+$ ladder status
+
+🪜 ladder  v1  0 done · 0 active · 0 exploring · 3 open · 0 blocked
+
+○ expansion
+  ○ R003  HTML export  → medium
+     Static HTML render of the ladder for sharing outside the terminal
+  ○ R004  Better AI-formatting tolerance in the parser  → medium
+     Different AI assistants drift from the exact markdown format over long sessions
+  ○ R005  Stage auto-progression suggestions  → small
+     Nudge which stage to focus on next based on completion state
+
+$ ladder next
+
+🎯 Suggested next rungs
+
+1. R005  Stage auto-progression suggestions  → small
+2. R003  HTML export  → medium
+3. R004  Better AI-formatting tolerance in the parser  → medium
+```
+
+Small, well-understood work sorted ahead of bigger bets, automatically.
+
 ## Commands
 
 | Command | Description |
@@ -89,6 +138,12 @@ version: 1
 3. `pytest`
 4. Open a PR
 
+## Contact
+
+[![Email](https://img.shields.io/badge/email-sethit%40tcd.ie-blue?logo=gmail&logoColor=white)](mailto:sethit@tcd.ie)
+
+Built by [Tanam Sethi](https://github.com/tanamsethi31). Questions, bug reports, or feature requests — open an [issue](https://github.com/tanamsethi31/ladder/issues) or reach out directly.
+
 ## License
 
-MIT
+MIT — see [LICENSE](LICENSE)
