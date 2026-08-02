@@ -237,6 +237,15 @@ def next() -> None:
     unblocked.sort(key=sort_key)
     render_next_suggestions(unblocked, console)
 
+    # Stage progression nudge: flag stages ≥50% done with active rungs still remaining
+    for stage in ladder.stages:
+        total = len(stage.rungs)
+        done = sum(1 for r in stage.rungs if r.is_done)
+        if total >= 2 and done > 0 and stage.active_rungs and done / total >= 0.5:
+            console.print(
+                f"[dim]💡 `{stage.name}` is {done}/{total} done — consider finishing it before moving on.[/dim]"
+            )
+
 
 @app.command()
 def validate() -> None:

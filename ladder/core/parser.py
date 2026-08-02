@@ -18,7 +18,7 @@ from ladder.core.models import (
 # More tolerant regex patterns
 STAGE_RE = re.compile(r"^##\s+(.+)$", re.MULTILINE)
 RUNG_RE = re.compile(
-    r"^-\s*\[(.?)\]\s*\*\*(R\d+)\*\*\s*[—\-]\s*(.+?)\s*→\s*\*(small|medium|large)\*",
+    r"^-\s*\[(.?)\]\s*\*\*(R\d+)\*\*\s*[—–\-]+\s*(.+?)\s*(?:→|--?>)\s*[\*\(\[]?(small|medium|large)[\*\)\]]?",
     re.MULTILINE | re.IGNORECASE,
 )
 OPTION_RE = re.compile(
@@ -66,11 +66,11 @@ def _parse_status(char: str, meta: dict[str, str]) -> Status:
         return Status.BLOCKED
     if char == "?":
         return Status.EXPLORING
-    if char == "▶":
+    if char in ("▶", ">"):
         return Status.IN_PROGRESS
     # Check metadata override
     if "status" in meta:
-        status_val = meta["status"].lower().replace(" ", "_")
+        status_val = meta["status"].lower().replace(" ", "_").replace("-", "_")
         try:
             return Status(status_val)
         except ValueError:
