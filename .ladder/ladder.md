@@ -24,8 +24,8 @@ version: 1
 - [ ] **R003** — HTML export → *medium*
   - Why: Static HTML render of the ladder for sharing outside the terminal
 
-- [ ] **R004** — Better AI-formatting tolerance in the parser → *medium*
+- [x] **R004** — Better AI-formatting tolerance in the parser → *medium*
   - Why: Different AI assistants drift from the exact markdown format over long sessions
 
-- [ ] **R005** — Stage auto-progression suggestions → *small*
+- [x] **R005** — Stage auto-progression suggestions → *small*
   - Why: Nudge which stage to focus on next based on completion state
