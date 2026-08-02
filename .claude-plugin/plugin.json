@@ -1,0 +1,14 @@
+{
+  "name": "ladder",
+  "displayName": "Ladder",
+  "version": "0.3.0",
+  "description": "Track every branch, stage, and alternative path in your AI pair-programming sessions.",
+  "author": {
+    "name": "Tanam Sethi",
+    "email": "sethit@tcd.ie"
+  },
+  "homepage": "https://github.com/tanamsethi31/ladder",
+  "repository": "https://github.com/tanamsethi31/ladder",
+  "license": "MIT",
+  "keywords": ["productivity", "decision-tracking", "ai-pair-programming", "cli"]
+}

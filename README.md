@@ -22,6 +22,20 @@ When pair-programming with AI, every decision presents multiple paths. You pick 
 pip install ladder-cli
 ```
 
+### Claude Code plugin (optional)
+
+Skip the copy-paste system prompt — wire the ladder directly into Claude Code:
+
+```bash
+claude plugin marketplace add tanamsethi31/ladder
+claude plugin install ladder@ladder
+```
+
+Claude sees the current ladder status automatically at session start and follows
+the `ladder-tracking` skill's rules (log new options as rungs, mark choices,
+show real command output) for the rest of the session — no manual `ladder prompt`
+paste needed. Requires `ladder-cli` installed and on `PATH`.
+
 ## Quick Start
 
 ```bash

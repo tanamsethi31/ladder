@@ -35,3 +35,12 @@ version: 1
 
 - [x] **R007** — sprint command → *medium*
   - Why: Budget-based picker for planning a batch of work
+
+## plugin
+
+- [?] **R008** — Hook verbosity: terse pointer vs full status render → *small*
+  - Why: Went with terse counts+pointer for now to save context tokens every session; revisit if that reads worse in practice than always showing full ladder status
+  - Status: exploring
+
+- [x] **R009** — Claude Code plugin: hook + skill → *large*
+  - Why: Wire ladder into the agent loop instead of manual copy-paste system prompt
