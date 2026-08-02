@@ -90,43 +90,50 @@ version: 1
 ```mermaid
 flowchart LR
     Dev["Developer"] -->|ladder init| Dir[".ladder/"]
-    Dev -->|ladder prompt| Prompt["System prompt"]
-    Prompt -->|pasted into| AI["Any AI assistant\nClaude, GPT-4, Cursor, Copilot"]
+    Dev -->|ladder prompt, or\nauto-injected by the\nClaude Code plugin| Prompt["System prompt / skill"]
+    Prompt -->|read by| AI["Any AI assistant\nClaude, GPT-4, Cursor, Copilot"]
     AI <-->|reads / writes| File[".ladder/ladder.md\nMarkdown + YAML"]
     Dir --> File
-    CLI["ladder CLI\nstatus · next · add · tree · validate"] <--> File
+    CLI["ladder CLI\nstatus · next · sprint · tree · export"] <--> File
     Dev -->|runs| CLI
 ```
 
-No API calls, no plugin, no server — the markdown file *is* the interface between you, the CLI, and whatever AI you're using.
+No API calls, no server — the markdown file *is* the interface between you, the CLI,
+and whatever AI you're using. The Claude Code plugin is a thin, optional automation
+layer on top of that: same file, same CLI, it just auto-loads the rules instead of
+you pasting them.
 
 ## Real output
 
 This project dogfoods itself — its own `.ladder/ladder.md` tracks its own roadmap:
 
 ```
-$ ladder status
+$ ladder status --stage plugin
 
-🪜 ladder  v1  0 done · 0 active · 0 exploring · 3 open · 0 blocked
+🪜 ladder  v1  6 done · 0 active · 1 exploring · 0 open · 0 blocked
 
-○ expansion
-  ○ R003  HTML export  → medium
-     Static HTML render of the ladder for sharing outside the terminal
-  ○ R004  Better AI-formatting tolerance in the parser  → medium
-     Different AI assistants drift from the exact markdown format over long sessions
-  ○ R005  Stage auto-progression suggestions  → small
-     Nudge which stage to focus on next based on completion state
+◐ plugin
+  ?   R008  Hook verbosity: terse pointer vs full status render  → small
+        Went with terse counts+pointer for now to save context tokens
+        every session; revisit if that reads worse in practice than
+        always showing full ladder status
+  ✓   R009  Claude Code plugin: hook + skill  → large
 
 $ ladder next
 
 🎯 Suggested next rungs
 
-1. R005  Stage auto-progression suggestions  → small
-2. R003  HTML export  → medium
-3. R004  Better AI-formatting tolerance in the parser  → medium
+1. R008  Hook verbosity: terse pointer vs full status render  → small
+   Went with terse counts+pointer for now to save context tokens every
+   session; revisit if that reads worse in practice than always showing
+   full ladder status
+
+💡 `plugin` is 1/2 done — consider finishing it before moving on.
 ```
 
-Small, well-understood work sorted ahead of bigger bets, automatically.
+Small, well-understood work sorted ahead of bigger bets, automatically — and the
+open decision above (R008) is a real one from building this project's own plugin,
+not a demo placeholder.
 
 ## Commands
 
@@ -151,6 +158,8 @@ Small, well-understood work sorted ahead of bigger bets, automatically.
 - **Auto-commits** — optionally commits ladder changes to git
 - **Dependency aware** — knows when a rung is blocked by another
 - **Effort-weighted** — small/medium/large so you can plan sprints
+- **Zero-friction in Claude Code** — the optional plugin auto-loads the rules and
+  current status, no copy-pasting a system prompt every session
 
 ## Contributing
 
