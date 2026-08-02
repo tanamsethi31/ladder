@@ -77,6 +77,37 @@ def test_export(tmp_path: Path) -> None:
     assert "R001" in html
 
 
+def test_note() -> None:
+    runner.invoke(app, ["init"])
+    result = runner.invoke(app, ["note", "R001", "Watch out for X"])
+    assert result.exit_code == 0
+
+    ladder = parse_ladder(Path(".ladder", "ladder.md"))
+    assert ladder.get_rung("R001").note == "Watch out for X"
+
+
+def test_note_missing_rung() -> None:
+    runner.invoke(app, ["init"])
+    result = runner.invoke(app, ["note", "R999", "text"])
+    assert result.exit_code == 1
+
+
+def test_sprint_fits_budget() -> None:
+    runner.invoke(app, ["init"])  # R001 small(1), R002 medium(2)
+    result = runner.invoke(app, ["sprint", "--budget", "1"])
+    assert result.exit_code == 0
+    assert "R001" in result.output
+    assert "R002" not in result.output
+
+
+def test_sprint_default_budget_fits_both() -> None:
+    runner.invoke(app, ["init"])
+    result = runner.invoke(app, ["sprint"])
+    assert result.exit_code == 0
+    assert "R001" in result.output
+    assert "R002" in result.output
+
+
 def test_next() -> None:
     runner.invoke(app, ["init"])
     # R001 and R002 exist from init

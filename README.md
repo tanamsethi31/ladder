@@ -125,6 +125,9 @@ Small, well-understood work sorted ahead of bigger bets, automatically.
 | `ladder complete R003` | Mark a rung as done |
 | `ladder abandon R003 --reason "deprecated"` | Mark a rung as abandoned |
 | `ladder tree` | Show dependencies as an ASCII tree |
+| `ladder note R003 "text"` | Attach a note to a rung |
+| `ladder sprint --budget 5` | Pick unblocked rungs that fit an effort budget |
+| `ladder export` | Export the ladder as a static HTML file |
 | `ladder prompt` | Print the system prompt for your AI |
 
 ## Why Ladder?

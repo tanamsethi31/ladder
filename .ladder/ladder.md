@@ -29,3 +29,9 @@ version: 1
 
 - [x] **R005** — Stage auto-progression suggestions → *small*
   - Why: Nudge which stage to focus on next based on completion state
+
+- [x] **R006** — note command → *small*
+  - Why: Attach free-text notes to rungs without changing status
+
+- [x] **R007** — sprint command → *medium*
+  - Why: Budget-based picker for planning a batch of work

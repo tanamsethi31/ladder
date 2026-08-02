@@ -254,7 +254,12 @@ def render_rung(rung: Rung, console: Console | None = None) -> None:
             console.print(f"  {check} {opt.text}", style=style)
 
 
-def render_next_suggestions(rungs: list[Rung], console: Console | None = None) -> None:
+def render_next_suggestions(
+    rungs: list[Rung],
+    console: Console | None = None,
+    limit: int | None = 5,
+    header: str = "🎯 Suggested next rungs",
+) -> None:
     """Render suggested next rungs."""
     if console is None:
         console = Console()
@@ -264,10 +269,11 @@ def render_next_suggestions(rungs: list[Rung], console: Console | None = None) -
         console.print("[dim]All active rungs are blocked or complete.[/dim]")
         return
 
-    console.print(Text("🎯 Suggested next rungs", style="bold yellow"))
+    console.print(Text(header, style="bold yellow"))
     console.print()
 
-    for i, rung in enumerate(rungs[:5], 1):
+    shown = rungs if limit is None else rungs[:limit]
+    for i, rung in enumerate(shown, 1):
         effort_color = _effort_style(rung.effort.value)
         line = Text()
         line.append(f"{i}. ", style="bold")

@@ -63,6 +63,21 @@ def _find_stage(ladder: Ladder, stage_name: str) -> Stage | None:
     return None
 
 
+EFFORT_ORDER = {"small": 0, "medium": 1, "large": 2}
+EFFORT_POINTS = {"small": 1, "medium": 2, "large": 3}
+
+
+def _priority_sort_key(ladder: Ladder, rung: Rung) -> tuple[int, int, str]:
+    """Sort by: current stage first, then effort (small → medium → large), then by ID."""
+    for i, stage in enumerate(ladder.stages):
+        if rung in stage.rungs:
+            stage_idx = i
+            break
+    else:
+        stage_idx = 999
+    return (stage_idx, EFFORT_ORDER.get(rung.effort.value, 1), rung.id)
+
+
 @app.command()
 def init(
     project: str = typer.Option("My Project", "--project", "-p", help="Project name"),
@@ -224,19 +239,7 @@ def next() -> None:
                 console.print(f"  {r.id} → blocked by {blockers}")
         return
 
-    # Sort by: current stage first, then effort (small → medium → large), then by ID
-    def sort_key(rung: Rung) -> tuple[int, int, str]:
-        # Find stage index
-        for i, stage in enumerate(ladder.stages):
-            if rung in stage.rungs:
-                stage_idx = i
-                break
-        else:
-            stage_idx = 999
-        effort_order = {"small": 0, "medium": 1, "large": 2}
-        return (stage_idx, effort_order.get(rung.effort.value, 1), rung.id)
-
-    unblocked.sort(key=sort_key)
+    unblocked.sort(key=lambda r: _priority_sort_key(ladder, r))
     render_next_suggestions(unblocked, console)
 
     # Stage progression nudge: flag stages ≥50% done with active rungs still remaining
@@ -337,6 +340,48 @@ def complete(rung_id: str = typer.Argument(..., help="Rung ID to mark done")) ->
     write_ladder(path, ladder)
     auto_commit(path, f"Complete {rung_id}: {rung.title}")
     console.print(f"[green]✓[/green] Completed [bold]{rung_id}[/bold]: {rung.title}")
+
+
+@app.command()
+def note(
+    rung_id: str = typer.Argument(..., help="Rung ID"),
+    text: str = typer.Argument(..., help="Note text"),
+) -> None:
+    """Attach a note to a rung."""
+    path, ladder = _load_ladder()
+    rung = ladder.get_rung(rung_id)
+    if not rung:
+        console.print(f"[red]Rung {rung_id} not found[/red]")
+        raise typer.Exit(1)
+
+    rung.note = text
+    write_ladder(path, ladder)
+    auto_commit(path, f"Note on {rung_id}")
+    console.print(f"[green]✓[/green] Noted on [bold]{rung_id}[/bold]: {text}")
+
+
+@app.command()
+def sprint(
+    budget: int = typer.Option(
+        5, "--budget", "-b", help="Effort points to fill (small=1, medium=2, large=3)"
+    ),
+) -> None:
+    """Pick unblocked rungs that fit within an effort budget."""
+    _, ladder = _load_ladder()
+    unblocked = ladder.get_unblocked_rungs()
+    unblocked.sort(key=lambda r: _priority_sort_key(ladder, r))
+
+    picked: list[Rung] = []
+    total = 0
+    for rung in unblocked:
+        cost = EFFORT_POINTS.get(rung.effort.value, 2)
+        if total + cost <= budget:
+            picked.append(rung)
+            total += cost
+
+    render_next_suggestions(
+        picked, console, limit=None, header=f"🏁 Sprint plan — {total}/{budget} pts"
+    )
 
 
 @app.command()
