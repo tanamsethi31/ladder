@@ -14,6 +14,7 @@ from ladder.core.git import auto_commit
 from ladder.core.models import Effort, Ladder, Rung, Stage, Status
 from ladder.core.parser import parse_ladder, write_ladder
 from ladder.core.renderer import (
+    render_html,
     render_next_suggestions,
     render_rung,
     render_status,
@@ -30,6 +31,7 @@ console = Console()
 
 LADDER_DIR = Path(".ladder")
 LADDER_FILE = LADDER_DIR / "ladder.md"
+DEFAULT_EXPORT_FILE = LADDER_DIR / "ladder.html"
 
 
 def _get_ladder_path() -> Path:
@@ -243,7 +245,8 @@ def next() -> None:
         done = sum(1 for r in stage.rungs if r.is_done)
         if total >= 2 and done > 0 and stage.active_rungs and done / total >= 0.5:
             console.print(
-                f"[dim]💡 `{stage.name}` is {done}/{total} done — consider finishing it before moving on.[/dim]"
+                f"[dim]💡 `{stage.name}` is {done}/{total} done — "
+                "consider finishing it before moving on.[/dim]"
             )
 
 
@@ -391,6 +394,18 @@ def tree() -> None:
     """Show the ladder as a dependency tree."""
     _, ladder = _load_ladder()
     render_tree(ladder, console)
+
+
+@app.command()
+def export(
+    out: str = typer.Option(str(DEFAULT_EXPORT_FILE), "--out", "-o", help="Output HTML file path"),
+) -> None:
+    """Export the ladder as a static HTML file."""
+    _, ladder = _load_ladder()
+    out_path = Path(out)
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text(render_html(ladder), encoding="utf-8")
+    console.print(f"[green]✓[/green] Exported ladder to [bold]{out_path}[/bold]")
 
 
 @app.command()

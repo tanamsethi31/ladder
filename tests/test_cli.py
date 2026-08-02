@@ -64,6 +64,19 @@ def test_add_invalid_effort() -> None:
     assert "Invalid effort" in result.output
 
 
+def test_export(tmp_path: Path) -> None:
+    runner.invoke(app, ["init", "--project", "<Test & Co>"])
+    result = runner.invoke(app, ["export"])
+    assert result.exit_code == 0
+
+    out = Path(tmp_path, ".ladder", "ladder.html")
+    assert out.exists()
+    html = out.read_text()
+    assert "<Test & Co>" not in html  # must be escaped, not injected raw
+    assert "&lt;Test &amp; Co&gt;" in html
+    assert "R001" in html
+
+
 def test_next() -> None:
     runner.invoke(app, ["init"])
     # R001 and R002 exist from init

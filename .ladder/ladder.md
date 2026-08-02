@@ -21,7 +21,7 @@ version: 1
 
 ## expansion
 
-- [ ] **R003** — HTML export → *medium*
+- [x] **R003** — HTML export → *medium*
   - Why: Static HTML render of the ladder for sharing outside the terminal
 
 - [x] **R004** — Better AI-formatting tolerance in the parser → *medium*
