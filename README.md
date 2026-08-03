@@ -19,8 +19,17 @@ When pair-programming with AI, every decision presents multiple paths. You pick 
 ## Install
 
 ```bash
-pip install ladder-cli
+pipx install ladder-cli
 ```
+
+`ladder` is a CLI tool, not a library — [pipx](https://pipx.pypa.io) installs it into
+its own isolated environment and puts the `ladder` command on your `PATH`, so it
+can't collide with dependencies in whatever project you're standing in.
+
+`pip install ladder-cli` also works if you're already inside a virtualenv. On a
+PEP 668–protected Python (Homebrew, some system installs), plain `pip` will refuse
+to install outside a venv — that's pip protecting itself, not a bug in this
+package; use pipx, a venv, or `pip install --user` instead.
 
 ### Claude Code plugin (optional)
 
