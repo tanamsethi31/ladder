@@ -63,3 +63,6 @@ version: 1
 
 - [x] **R015** — HTML export design pass → *medium*
   - Why: Weakest of the three output surfaces per user feedback; brought it up to the level of the terminal/plugin work
+
+- [x] **R016** — Terminal output consistency pass → *small*
+  - Why: Rung tables auto-sized per-stage, causing ragged column widths across a status view; tree view was also missing brand emoji + stage-completion color that status already had

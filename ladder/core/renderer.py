@@ -44,6 +44,14 @@ def _stage_dot(stage: Stage) -> str:
     return "○"
 
 
+def _stage_dot_style(stage: Stage) -> str:
+    if stage.is_complete:
+        return "green"
+    if stage.has_progress or stage.any_done:
+        return "yellow"
+    return "dim"
+
+
 def _rung_style(rung: Rung) -> str:
     if rung.status == Status.BLOCKED:
         return "dim red"
@@ -120,12 +128,7 @@ def render_status(
             continue
 
         dot = _stage_dot(stage)
-        dot_style = {
-            "●": "green",
-            "◐": "yellow",
-            "◑": "yellow",
-            "○": "dim",
-        }.get(dot, "dim")
+        dot_style = _stage_dot_style(stage)
 
         console.print(Text(f"{dot} {stage.name}", style=f"bold {dot_style}"))
         console.print()
@@ -135,7 +138,7 @@ def render_status(
 
 def _render_rung_table(rungs: list[Rung]) -> Table:
     """A table of rungs, one row each, with alternative options nested inside the row."""
-    table = Table(box=box.SIMPLE_HEAD, show_edge=False, pad_edge=False, expand=False)
+    table = Table(box=box.SIMPLE_HEAD, show_edge=False, pad_edge=False, expand=True)
     table.add_column("", width=1)
     table.add_column("Rung", ratio=1)
     table.add_column("Effort", justify="right")
@@ -178,10 +181,12 @@ def render_tree(ladder: Ladder, console: Console | None = None) -> None:
     if console is None:
         console = Console()
 
-    root = Tree(f"[bold]{ladder.project}[/bold]")
+    root = Tree(f"🪜 [bold]{ladder.project}[/bold]")
 
     for stage in ladder.stages:
-        stage_node = root.add(f"[bold]{stage.name}[/bold]")
+        dot = _stage_dot(stage)
+        dot_style = _stage_dot_style(stage)
+        stage_node = root.add(f"[{dot_style}]{dot}[/{dot_style}] [bold]{stage.name}[/bold]")
         for rung in stage.rungs:
             emoji = _status_emoji(rung.status)
             effort_color = _effort_style(rung.effort.value)
