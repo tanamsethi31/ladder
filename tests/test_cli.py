@@ -188,6 +188,113 @@ def test_validate_with_errors(tmp_path: Path) -> None:
     assert "does not exist" in result.output
 
 
+def _append_and_validate(tmp_path: Path, ladder_snippet: str) -> object:
+    runner.invoke(app, ["init"])
+    path = Path(tmp_path, ".ladder", "ladder.md")
+    path.write_text(path.read_text() + ladder_snippet)
+    return runner.invoke(app, ["validate"])
+
+
+def test_validate_duplicate_id(tmp_path: Path) -> None:
+    result = _append_and_validate(
+        tmp_path,
+        """
+## dup
+
+- [ ] **R001** — Duplicate of the init placeholder → *small*
+""",
+    )
+    assert result.exit_code == 1
+    assert "Duplicate rung ID: R001" in result.output
+
+
+def test_validate_self_blocking(tmp_path: Path) -> None:
+    result = _append_and_validate(
+        tmp_path,
+        """
+## broken
+
+- [ ] **R999** — Self blocker → *small*
+  - Blocked by: R999
+""",
+    )
+    assert result.exit_code == 1
+    assert "cannot block itself" in result.output
+
+
+def test_validate_circular_dependency(tmp_path: Path) -> None:
+    result = _append_and_validate(
+        tmp_path,
+        """
+## broken
+
+- [ ] **R997** — First → *small*
+  - Blocked by: R998
+- [ ] **R998** — Second → *small*
+  - Blocked by: R997
+""",
+    )
+    assert result.exit_code == 1
+    assert "Circular dependency" in result.output
+
+
+def test_validate_orphaned_parent(tmp_path: Path) -> None:
+    result = _append_and_validate(
+        tmp_path,
+        """
+## broken
+
+- [ ] **R999** — Orphan → *small*
+  - Parent: R000
+""",
+    )
+    assert result.exit_code == 1
+    assert "parent 'R000' does not exist" in result.output
+
+
+def test_validate_warning_done_but_no_option_chosen(tmp_path: Path) -> None:
+    result = _append_and_validate(
+        tmp_path,
+        """
+## warn
+
+- [x] **R999** — Done but nothing picked → *small*
+  - [ ] Option A
+  - [ ] Option B
+""",
+    )
+    assert result.exit_code == 0
+    assert "marked done but no option chosen" in result.output
+
+
+def test_validate_warning_done_but_still_blocked(tmp_path: Path) -> None:
+    result = _append_and_validate(
+        tmp_path,
+        """
+## warn
+
+- [x] **R999** — Done but blocked → *small*
+  - Blocked by: R001
+""",
+    )
+    # Warnings alone don't fail the command
+    assert result.exit_code == 0
+    assert "is done but still lists blockers" in result.output
+
+
+def test_validate_warning_blocked_status_no_blockers(tmp_path: Path) -> None:
+    result = _append_and_validate(
+        tmp_path,
+        """
+## warn
+
+- [!] **R999** — Says blocked, lists nothing → *small*
+""",
+    )
+    assert result.exit_code == 0
+    assert "status is blocked but no blockers listed" in result.output
+
+
 def test_do_and_complete() -> None:
     runner.invoke(app, ["init"])
     result = runner.invoke(app, ["do", "R001"])
