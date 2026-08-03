@@ -38,10 +38,9 @@ version: 1
 
 ## plugin
 
-- [?] **R008** — Hook verbosity: terse pointer vs full status render → *small*
+- [x] **R008** — Hook verbosity: terse pointer vs full status render → *small*
   - Why: Went with terse counts+pointer for now to save context tokens every session; revisit if that reads worse in practice than always showing full ladder status
-  - Note: Reopened - the earlier 'resolved' note overstated the evidence. What's actually shown: terse SessionStart answers correctly (tested fresh/big/empty), and the real token cost is now quantified (250 tok on a fresh project, 782 tok on this repo's 16 rungs, ~13-48x terse - modest, not overwhelming). What's still missing: no side-by-side test of whether lacking why/blocked-by/options in terse ever causes worse behavior, and no real multi-day dogfood signal from jobagent/hanuman/aviation-finance-insights - this was resolved in one sitting from synthetic tests. Leaving as exploring until real usage settles it, per the original framing.
-  - Status: exploring
+  - Note: Resolved with real A/B evidence: 12 controlled nested-session trials (3 scenarios x terse/full x 2 reps), same fixture, only SessionStart injection differed. Blocked-dependency and what's-next scenarios: 2/2 pass both conditions, no behavioral deficit from terse. Turn counts: terse avg 5.0, full avg 4.83 - no round-trip penalty for terse either. Ambiguous-pronoun-reference scenario: both conditions weak (terse 0/2 derailed into logging meta-talk, full 1/2 with one confident wrong-rung answer) - but that's an unrelated gap (see R021), not evidence for full. Keeping terse: real, uncontested token savings (250-800+ tok/session) with no measured behavioral cost.
 
 - [x] **R009** — Claude Code plugin: hook + skill → *large*
   - Why: Wire ladder into the agent loop instead of manual copy-paste system prompt
@@ -79,3 +78,7 @@ version: 1
 
 - [x] **R020** — Stop hook false-positive: bare lists triggered constantly → *small*
   - Why: Structural '2+ list items' check fired on nearly every multi-point response (status recaps, step lists) regardless of content; removed it, kept only explicit choice-language patterns
+
+- [?] **R021** — Ambiguous pronoun references to rungs are unreliable → *medium*
+  - Why: Discovered via R008's A/B test: 'why is that still undecided' with multiple candidate rungs failed in both terse (derailed into logging talk, never answered) and full (confidently named the wrong rung) conditions. Not a terse-vs-full issue - a real, separate gap in resolving vague references when several rungs could match.
+  - Status: exploring
