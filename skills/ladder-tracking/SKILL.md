@@ -58,11 +58,20 @@ vanish into scrollback — the ladder captures them instead.
     brief open-rungs summary, even though you just showed everything — don't skip
     it just because the full dump already contains that information.
 
-If you're running as the Claude Code plugin, a `Stop` hook backs up rule 9 — it
-scans every response for signs of an unlogged option (lists, "either X or Y",
-"alternatively", etc.) and injects a reminder if it finds one. That catches misses
-mid-session, not just at the end, but it's a cheap heuristic, not a substitute for
-actually following rules 2 and 9 yourself.
+If you're running as the Claude Code plugin, two hooks back up rules 8/9/11 with
+actual enforcement, not just reminders — a plain instruction (even one worded as
+"non-negotiable") was proven unreliable in practice:
+
+- A `Stop` hook scans every response for signs of an unlogged option (lists,
+  "either X or Y", "alternatively", etc.) and injects a reminder if it finds one.
+  Catches misses mid-session, not just at the end — but it's a cheap heuristic,
+  not a substitute for actually following rules 2 and 9 yourself.
+- A `UserPromptSubmit` hook detects a status/tree/"full" request and records what's
+  expected; the `Stop` hook then independently re-runs the real command and checks
+  whether its actual output appears verbatim in the response. If it doesn't —
+  paraphrased instead of pasted — it **blocks the turn from ending** and forces a
+  redo, up to 3 times before giving up silently. This exists because rule 11 was
+  violated on the very first real test despite its wording.
 
 ## Status Checkbox Guide
 

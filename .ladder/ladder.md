@@ -72,3 +72,6 @@ version: 1
 
 - [ ] **R018** — demo.gif is stale against the new brand colors → *medium*
   - Why: assets/demo.gif still shows the old GitHub-blue palette; needs re-recording, not just a color swap
+
+- [x] **R019** — Enforce status-relay via UserPromptSubmit+Stop hook block → *large*
+  - Why: Rule 11 (hard, non-negotiable, paste 100%) was violated on the very first real dogfood test - I paraphrased instead of pasting, twice. Prompt wording alone is proven unreliable; needed actual enforcement that blocks the turn until the real output is verifiably present
