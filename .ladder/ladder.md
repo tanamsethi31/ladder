@@ -47,3 +47,6 @@ version: 1
 
 - [x] **R010** — Stop hook: catch unlogged options mid-session → *medium*
   - Why: Rule 9 only self-checked once at session end; a deterministic Stop hook now nudges after every turn instead
+
+- [x] **R011** — Explicit 'full' override for status/tree → *small*
+  - Why: Rule 8 alone had already been rewritten 3x historically and still risked paraphrasing; an explicit non-negotiable trigger phrase is cheaper to try before building transcript-verification enforcement
