@@ -197,6 +197,114 @@ version: 1
     assert ladder.stages[0].rungs[1].status == Status.DONE
 
 
+def test_invalid_status_metadata_falls_back_to_open(tmp_path: Path) -> None:
+    """An AI assistant might write a Status value that doesn't map to any real
+    status (typo, freeform text). Should fall back to open, not crash."""
+    ladder_text = """---
+project: Test
+version: 1
+---
+
+## core
+
+- [ ] **R001** — Feature A → *small*
+  - Status: some-nonsense-value-nobody-wrote-correctly
+"""
+    ladder_file = tmp_path / "ladder.md"
+    ladder_file.write_text(ladder_text)
+    ladder = parse_ladder(ladder_file)
+    assert ladder.stages[0].rungs[0].status == Status.OPEN
+
+
+def test_invalid_version_in_frontmatter_falls_back_to_1(tmp_path: Path) -> None:
+    ladder_text = """---
+project: Test
+version: not-a-number
+---
+
+## core
+
+- [ ] **R001** — Feature A → *small*
+"""
+    ladder_file = tmp_path / "ladder.md"
+    ladder_file.write_text(ladder_text)
+    ladder = parse_ladder(ladder_file)
+    assert ladder.version == 1
+    assert ladder.project == "Test"
+
+
+def test_metadata_lines_are_not_parsed_as_options(tmp_path: Path) -> None:
+    """The option regex is loose enough to accidentally match a metadata line
+    that starts with '- [ ]'-like text — must not create a bogus option."""
+    ladder_text = """---
+project: Test
+version: 1
+---
+
+## core
+
+- [ ] **R001** — Feature A → *small*
+  - Context: some context
+  - Why: some reason
+  - [ ] Real option
+  - Blocked by: ~none~
+"""
+    ladder_file = tmp_path / "ladder.md"
+    ladder_file.write_text(ladder_text)
+    ladder = parse_ladder(ladder_file)
+    rung = ladder.stages[0].rungs[0]
+    assert len(rung.options) == 1
+    assert rung.options[0].text == "Real option"
+
+
+def test_metadata_accidentally_written_as_a_checkbox_is_skipped(tmp_path: Path) -> None:
+    """A plausible AI-formatting-drift case: metadata written with a checkbox
+    prefix (e.g. "- [ ] Context: ...") instead of the plain "- Context: ..."
+    form — the option regex would match it, so it must be filtered out."""
+    ladder_text = """---
+project: Test
+version: 1
+---
+
+## core
+
+- [ ] **R001** — Feature A → *small*
+  - [ ] Context: this got checkbox-formatted by mistake
+  - [ ] Real option
+"""
+    ladder_file = tmp_path / "ladder.md"
+    ladder_file.write_text(ladder_text)
+    ladder = parse_ladder(ladder_file)
+    rung = ladder.stages[0].rungs[0]
+    assert len(rung.options) == 1
+    assert rung.options[0].text == "Real option"
+
+
+def test_parent_and_note_fields_round_trip_through_write_and_parse(tmp_path: Path) -> None:
+    ladder_text = """---
+project: Test
+version: 1
+---
+
+## core
+
+- [ ] **R002** — Sub-task → *small*
+  - Parent: R001
+  - Note: a free-text note
+"""
+    ladder_file = tmp_path / "ladder.md"
+    ladder_file.write_text(ladder_text)
+    ladder = parse_ladder(ladder_file)
+    assert ladder.stages[0].rungs[0].parent == "R001"
+    assert ladder.stages[0].rungs[0].note == "a free-text note"
+
+    out_path = tmp_path / "out.md"
+    write_ladder(out_path, ladder)
+    reparsed = parse_ladder(out_path)
+    assert reparsed.stages[0].rungs[0].parent == "R001"
+    assert reparsed.stages[0].rungs[0].note == "a free-text note"
+
+
 def test_write_ladder(tmp_path: Path) -> None:
     ladder_file = tmp_path / "ladder.md"
     ladder_file.write_text(SAMPLE_LADDER)
