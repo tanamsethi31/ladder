@@ -14,6 +14,7 @@ from ladder.core.git import auto_commit
 from ladder.core.models import Effort, Ladder, Rung, Stage, Status
 from ladder.core.parser import parse_ladder, write_ladder
 from ladder.core.renderer import (
+    LADDER_THEME,
     render_html,
     render_next_suggestions,
     render_rung,
@@ -27,7 +28,7 @@ app = typer.Typer(
     help="Track every branch, stage, and alternative path in your AI pair-programming sessions.",
     no_args_is_help=True,
 )
-console = Console()
+console = Console(theme=LADDER_THEME)
 
 
 @app.callback()
@@ -42,7 +43,7 @@ def _main(
 ) -> None:
     if no_color:
         global console
-        console = Console(no_color=True, force_terminal=False)
+        console = Console(theme=LADDER_THEME, no_color=True, force_terminal=False)
 
 
 LADDER_DIR = Path(".ladder")
@@ -61,10 +62,10 @@ def _load_ladder() -> tuple[Path, Ladder]:
     if not path.exists():
         console.print(
             Panel(
-                Text("No ladder found. Run ", style="red")
-                + Text("ladder init", style="bold yellow")
-                + Text(" to create one.", style="red"),
-                border_style="red",
+                Text("No ladder found. Run ", style="danger")
+                + Text("ladder init", style="warning.bold")
+                + Text(" to create one.", style="danger"),
+                border_style="danger",
             )
         )
         raise typer.Exit(1)
@@ -101,7 +102,7 @@ def init(
     """Initialize a new ladder in the current directory."""
     path = _get_ladder_path()
     if path.exists():
-        console.print(f"[yellow]Ladder already exists at {path}[/yellow]")
+        console.print(f"[warning]Ladder already exists at {path}[/warning]")
         raise typer.Exit(0)
 
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -139,7 +140,7 @@ def init(
     )
 
     write_ladder(path, ladder)
-    console.print(f"[green]✓[/green] Created ladder at [bold]{path}[/bold]")
+    console.print(f"[success]✓[/success] Created ladder at [bold]{path}[/bold]")
     console.print()
     console.print("Next steps:")
     console.print("  1. Paste the system prompt into your AI assistant")
@@ -165,7 +166,7 @@ def show(rung_id: str = typer.Argument(..., help="Rung ID (e.g. R003)")) -> None
     _, ladder = _load_ladder()
     rung = ladder.get_rung(rung_id)
     if not rung:
-        console.print(f"[red]Rung {rung_id} not found[/red]")
+        console.print(f"[danger]Rung {rung_id} not found[/danger]")
         raise typer.Exit(1)
     render_rung(rung, console)
 
@@ -189,7 +190,7 @@ def add(
     try:
         effort_enum = Effort(effort.lower())
     except ValueError:
-        console.print(f"[red]Invalid effort: {effort}. Use small, medium, or large.[/red]")
+        console.print(f"[danger]Invalid effort: {effort}. Use small, medium, or large.[/danger]")
         raise typer.Exit(1) from None
 
     # Generate next ID
@@ -202,11 +203,11 @@ def add(
     all_ids = ladder.all_rung_ids
     for blocker in blockers:
         if blocker not in all_ids:
-            console.print(f"[yellow]Warning: blocker {blocker} does not exist yet[/yellow]")
+            console.print(f"[warning]Warning: blocker {blocker} does not exist yet[/warning]")
 
     # Validate parent exists
     if parent and parent not in all_ids:
-        console.print(f"[yellow]Warning: parent {parent} does not exist yet[/yellow]")
+        console.print(f"[warning]Warning: parent {parent} does not exist yet[/warning]")
 
     new_rung = Rung(
         id=rung_id,
@@ -230,7 +231,7 @@ def add(
     write_ladder(path, ladder)
     auto_commit(path, f"Add {rung_id}: {title}")
 
-    console.print(f"[green]✓[/green] Added [bold]{rung_id}[/bold]: {title}")
+    console.print(f"[success]✓[/success] Added [bold]{rung_id}[/bold]: {title}")
     if blockers:
         console.print(f"   Blocked by: {', '.join(blockers)}")
     console.print(f"   Stage: {target_stage.name}  |  Effort: {effort_enum.value}")
@@ -333,13 +334,13 @@ def do(rung_id: str = typer.Argument(..., help="Rung ID to start working on")) -
     path, ladder = _load_ladder()
     rung = ladder.get_rung(rung_id)
     if not rung:
-        console.print(f"[red]Rung {rung_id} not found[/red]")
+        console.print(f"[danger]Rung {rung_id} not found[/danger]")
         raise typer.Exit(1)
 
     rung.status = Status.IN_PROGRESS
     write_ladder(path, ladder)
     auto_commit(path, f"Start work on {rung_id}: {rung.title}")
-    console.print(f"[green]▶[/green] Now working on [bold]{rung_id}[/bold]: {rung.title}")
+    console.print(f"[success]▶[/success] Now working on [bold]{rung_id}[/bold]: {rung.title}")
 
 
 @app.command()
@@ -348,14 +349,14 @@ def complete(rung_id: str = typer.Argument(..., help="Rung ID to mark done")) ->
     path, ladder = _load_ladder()
     rung = ladder.get_rung(rung_id)
     if not rung:
-        console.print(f"[red]Rung {rung_id} not found[/red]")
+        console.print(f"[danger]Rung {rung_id} not found[/danger]")
         raise typer.Exit(1)
 
     rung.status = Status.DONE
     rung.completed_at = datetime.now()
     write_ladder(path, ladder)
     auto_commit(path, f"Complete {rung_id}: {rung.title}")
-    console.print(f"[green]✓[/green] Completed [bold]{rung_id}[/bold]: {rung.title}")
+    console.print(f"[success]✓[/success] Completed [bold]{rung_id}[/bold]: {rung.title}")
 
 
 @app.command()
@@ -367,13 +368,13 @@ def note(
     path, ladder = _load_ladder()
     rung = ladder.get_rung(rung_id)
     if not rung:
-        console.print(f"[red]Rung {rung_id} not found[/red]")
+        console.print(f"[danger]Rung {rung_id} not found[/danger]")
         raise typer.Exit(1)
 
     rung.note = text
     write_ladder(path, ladder)
     auto_commit(path, f"Note on {rung_id}")
-    console.print(f"[green]✓[/green] Noted on [bold]{rung_id}[/bold]: {text}")
+    console.print(f"[success]✓[/success] Noted on [bold]{rung_id}[/bold]: {text}")
 
 
 @app.command()
@@ -409,7 +410,7 @@ def abandon(
     path, ladder = _load_ladder()
     rung = ladder.get_rung(rung_id)
     if not rung:
-        console.print(f"[red]Rung {rung_id} not found[/red]")
+        console.print(f"[danger]Rung {rung_id} not found[/danger]")
         raise typer.Exit(1)
 
     rung.status = Status.ABANDONED
@@ -426,13 +427,13 @@ def explore(rung_id: str = typer.Argument(..., help="Rung ID to explore")) -> No
     path, ladder = _load_ladder()
     rung = ladder.get_rung(rung_id)
     if not rung:
-        console.print(f"[red]Rung {rung_id} not found[/red]")
+        console.print(f"[danger]Rung {rung_id} not found[/danger]")
         raise typer.Exit(1)
 
     rung.status = Status.EXPLORING
     write_ladder(path, ladder)
     auto_commit(path, f"Explore {rung_id}: {rung.title}")
-    console.print(f"[cyan]?[/cyan] Exploring [bold]{rung_id}[/bold]: {rung.title}")
+    console.print(f"[info]?[/info] Exploring [bold]{rung_id}[/bold]: {rung.title}")
 
 
 @app.command()
@@ -441,7 +442,7 @@ def reject(rung_id: str = typer.Argument(..., help="Rung ID to reject")) -> None
     path, ladder = _load_ladder()
     rung = ladder.get_rung(rung_id)
     if not rung:
-        console.print(f"[red]Rung {rung_id} not found[/red]")
+        console.print(f"[danger]Rung {rung_id} not found[/danger]")
         raise typer.Exit(1)
 
     rung.status = Status.REJECTED
@@ -466,7 +467,7 @@ def export(
     out_path = Path(out)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(render_html(ladder), encoding="utf-8")
-    console.print(f"[green]✓[/green] Exported ladder to [bold]{out_path}[/bold]")
+    console.print(f"[success]✓[/success] Exported ladder to [bold]{out_path}[/bold]")
 
 
 @app.command()
@@ -476,7 +477,7 @@ def prompt() -> None:
     if prompt_path.exists():
         console.print(prompt_path.read_text(), markup=False, highlight=False)
     else:
-        console.print("[red]Prompt file not found[/red]")
+        console.print("[danger]Prompt file not found[/danger]")
 
 
 if __name__ == "__main__":

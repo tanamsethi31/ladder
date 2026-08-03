@@ -9,16 +9,46 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
+from rich.theme import Theme
 from rich.tree import Tree
 
 from ladder.core.models import Ladder, Rung, Stage, Status
 
+# Brand palette: warm amber/wood tones tied to the 🪜 theme, not a generic
+# blue-on-near-black dev-tool look. Named so the palette has one source of
+# truth instead of hex scattered through every style string.
+# Rich can't resolve "bold <theme-name>" built from string concatenation at
+# render time, so bold/dim/italic variants are pre-combined here instead.
+LADDER_THEME = Theme(
+    {
+        "success": "#93b854",
+        "success.bold": "bold #93b854",
+        "warning": "#e0a458",
+        "warning.bold": "bold #e0a458",
+        "danger": "#d0604f",
+        "danger.bold": "bold #d0604f",
+        "danger.dim": "dim #d0604f",
+        "info": "#6fa3a0",
+        "info.bold": "bold #6fa3a0",
+        "info.italic": "italic #6fa3a0",
+    }
+)
+
+_BOLD_VARIANT = {"success": "success.bold", "warning": "warning.bold", "danger": "danger.bold"}
+
+
+def _bold(style_name: str) -> str:
+    """A bold variant of a style name, using a pre-combined theme entry for our
+    custom brand colors (Rich can't resolve "bold <theme-name>" from a
+    concatenated string at render time)."""
+    return _BOLD_VARIANT.get(style_name, f"bold {style_name}")
+
 
 def _effort_style(effort: str) -> str:
     return {
-        "small": "green",
-        "medium": "yellow",
-        "large": "red",
+        "small": "success",
+        "medium": "warning",
+        "large": "danger",
     }.get(effort, "white")
 
 
@@ -46,23 +76,23 @@ def _stage_dot(stage: Stage) -> str:
 
 def _stage_dot_style(stage: Stage) -> str:
     if stage.is_complete:
-        return "green"
+        return "success"
     if stage.has_progress or stage.any_done:
-        return "yellow"
+        return "warning"
     return "dim"
 
 
 def _rung_style(rung: Rung) -> str:
     if rung.status == Status.BLOCKED:
-        return "dim red"
+        return "danger.dim"
     if rung.status == Status.ABANDONED or rung.status == Status.REJECTED:
         return "dim strike"
     if rung.is_done:
         return "dim strike"
     if rung.status == Status.IN_PROGRESS:
-        return "bold yellow"
+        return "warning.bold"
     if rung.status == Status.EXPLORING:
-        return "italic cyan"
+        return "info.italic"
     return "white"
 
 
@@ -74,7 +104,7 @@ def render_status(
 ) -> None:
     """Render the full ladder status to the terminal."""
     if console is None:
-        console = Console()
+        console = Console(theme=LADDER_THEME)
 
     # Header
     header = Text()
@@ -100,11 +130,11 @@ def render_status(
     stats.add_column(justify="center")
     stats.add_column(justify="center")
     stats.add_row(
-        Text(str(ladder.completed_count), style="bold green", justify="center"),
-        Text(str(ladder.in_progress_count), style="bold yellow", justify="center"),
-        Text(str(ladder.exploring_count), style="bold cyan", justify="center"),
+        Text(str(ladder.completed_count), style="success.bold", justify="center"),
+        Text(str(ladder.in_progress_count), style="warning.bold", justify="center"),
+        Text(str(ladder.exploring_count), style="info.bold", justify="center"),
         Text(str(ladder.open_count), style="bold white", justify="center"),
-        Text(str(ladder.blocked_count), style="bold red", justify="center"),
+        Text(str(ladder.blocked_count), style="danger.bold", justify="center"),
     )
     stats.add_row(
         Text("done", style="dim", justify="center"),
@@ -130,7 +160,7 @@ def render_status(
         dot = _stage_dot(stage)
         dot_style = _stage_dot_style(stage)
 
-        console.print(Text(f"{dot} {stage.name}", style=f"bold {dot_style}"))
+        console.print(Text(f"{dot} {stage.name}", style=_bold(dot_style)))
         console.print()
         console.print(_render_rung_table(visible_rungs))
         console.print()
@@ -152,7 +182,7 @@ def _render_rung_table(rungs: list[Rung]) -> Table:
         body.append(f"{rung.id}  ", style="dim")
         body.append(rung.title, style=rung_style)
         if rung.blocked_by:
-            body.append(f"  [blocked by {', '.join(rung.blocked_by)}]", style="red dim")
+            body.append(f"  [blocked by {', '.join(rung.blocked_by)}]", style="danger.dim")
 
         if rung.why and not rung.is_done:
             body.append("\n   ")
@@ -161,8 +191,8 @@ def _render_rung_table(rungs: list[Rung]) -> Table:
         for opt in rung.options:
             body.append("\n   ")
             if opt.chosen:
-                body.append("✓ ", style="bold green")
-                body.append(opt.text, style="green")
+                body.append("✓ ", style="success.bold")
+                body.append(opt.text, style="success")
             else:
                 body.append("○ ", style="dim")
                 body.append(opt.text, style="dim")
@@ -179,7 +209,7 @@ def _render_rung_table(rungs: list[Rung]) -> Table:
 def render_tree(ladder: Ladder, console: Console | None = None) -> None:
     """Render the ladder as an ASCII dependency tree."""
     if console is None:
-        console = Console()
+        console = Console(theme=LADDER_THEME)
 
     root = Tree(f"🪜 [bold]{ladder.project}[/bold]")
 
@@ -199,14 +229,14 @@ def render_tree(ladder: Ladder, console: Console | None = None) -> None:
 
             if rung.blocked_by:
                 blockers = ", ".join(rung.blocked_by)
-                rung_node.add(f"[red]← blocked by {blockers}[/red]")
+                rung_node.add(f"[danger]← blocked by {blockers}[/danger]")
             if rung.parent:
                 rung_node.add(f"[dim]← parent: {rung.parent}[/dim]")
             if rung.why:
                 rung_node.add(f"[dim italic]↳ {rung.why}[/dim italic]")
             for opt in rung.options:
-                mark = "[bold green]✓[/bold green]" if opt.chosen else "[dim]○[/dim]"
-                text_style = "green" if opt.chosen else "dim"
+                mark = "[success.bold]✓[/success.bold]" if opt.chosen else "[dim]○[/dim]"
+                text_style = "success" if opt.chosen else "dim"
                 rung_node.add(f"{mark} [{text_style}]{opt.text}[/{text_style}]")
 
     console.print(root)
@@ -215,7 +245,7 @@ def render_tree(ladder: Ladder, console: Console | None = None) -> None:
 def render_rung(rung: Rung, console: Console | None = None) -> None:
     """Render a single rung in detail."""
     if console is None:
-        console = Console()
+        console = Console(theme=LADDER_THEME)
 
     effort_color = _effort_style(rung.effort.value)
     status_emoji = _status_emoji(rung.status)
@@ -255,7 +285,7 @@ def render_rung(rung: Rung, console: Console | None = None) -> None:
         console.print(Text("Options:", style="bold dim"))
         for opt in rung.options:
             check = "[x]" if opt.chosen else "[ ]"
-            style = "green" if opt.chosen else "white"
+            style = "success" if opt.chosen else "white"
             console.print(f"  {check} {opt.text}", style=style)
 
 
@@ -267,14 +297,14 @@ def render_next_suggestions(
 ) -> None:
     """Render suggested next rungs."""
     if console is None:
-        console = Console()
+        console = Console(theme=LADDER_THEME)
 
     if not rungs:
         console.print("[dim]No unblocked rungs available.[/dim]")
         console.print("[dim]All active rungs are blocked or complete.[/dim]")
         return
 
-    console.print(Text(header, style="bold yellow"))
+    console.print(Text(header, style="warning.bold"))
     console.print()
 
     shown = rungs if limit is None else rungs[:limit]
@@ -291,10 +321,10 @@ def render_next_suggestions(
         if rung.blocked_by:
             console.print(Text(f"   [will unblock: {', '.join(rung.blocked_by)}]", style="dim"))
         for opt in rung.options:
-            mark, mark_style = ("✓", "bold green") if opt.chosen else ("○", "dim")
+            mark, mark_style = ("✓", "success.bold") if opt.chosen else ("○", "dim")
             line = Text("   ")
             line.append(f"{mark} ", style=mark_style)
-            line.append(opt.text, style="green" if opt.chosen else "dim")
+            line.append(opt.text, style="success" if opt.chosen else "dim")
             console.print(line)
         console.print()
 
@@ -304,22 +334,22 @@ def render_validation(
 ) -> None:
     """Render validation results."""
     if console is None:
-        console = Console()
+        console = Console(theme=LADDER_THEME)
 
     if not errors and not warnings:
-        console.print("[green]✓[/green] Ladder is valid. No issues found.")
+        console.print("[success]✓[/success] Ladder is valid. No issues found.")
         return
 
     if errors:
-        console.print(Text(f"✕ {len(errors)} error(s) found:", style="bold red"))
+        console.print(Text(f"✕ {len(errors)} error(s) found:", style="danger.bold"))
         for err in errors:
-            console.print(f"  [red]•[/red] {err}")
+            console.print(f"  [danger]•[/danger] {err}")
         console.print()
 
     if warnings:
-        console.print(Text(f"⚠ {len(warnings)} warning(s) found:", style="bold yellow"))
+        console.print(Text(f"⚠ {len(warnings)} warning(s) found:", style="warning.bold"))
         for warn in warnings:
-            console.print(f"  [yellow]•[/yellow] {warn}")
+            console.print(f"  [warning]•[/warning] {warn}")
 
 
 def _rung_css_class(rung: Rung) -> str:
@@ -416,13 +446,13 @@ def render_html(ladder: Ladder) -> str:
 <title>{escape(ladder.project)} — ladder</title>
 <style>
   :root {{
-    --bg: #0d1117; --surface: #161b22; --border: #21262d; --text: #c9d1d9; --dim: #8b949e;
-    --green: #3fb950; --yellow: #d29922; --red: #f85149; --blue: #58a6ff;
+    --bg: #181310; --surface: #221b16; --border: #362c23; --text: #efe4d3; --dim: #a89a86;
+    --green: #93b854; --yellow: #e0a458; --red: #d0604f; --blue: #6fa3a0;
   }}
   @media (prefers-color-scheme: light) {{
     :root {{
-      --bg: #f6f8fa; --surface: #ffffff; --border: #d0d7de; --text: #1f2328; --dim: #656d76;
-      --green: #1a7f37; --yellow: #9a6700; --red: #cf222e; --blue: #0969da;
+      --bg: #f7f1e6; --surface: #fffdf8; --border: #ddd0ba; --text: #2b2118; --dim: #6f6252;
+      --green: #4d6820; --yellow: #8a5c14; --red: #a8402f; --blue: #3f7370;
     }}
   }}
   * {{ box-sizing: border-box; }}

@@ -66,3 +66,9 @@ version: 1
 
 - [x] **R016** — Terminal output consistency pass → *small*
   - Why: Rung tables auto-sized per-stage, causing ragged column widths across a status view; tree view was also missing brand emoji + stage-completion color that status already had
+
+- [x] **R017** — Brand color identity across CLI/HTML/README → *medium*
+  - Why: Every color was a literal copy of GitHub's Primer palette; replaced with a warm amber/wood identity tied to the ladder theme, applied via a Rich Theme (terminal), CSS variables (HTML export), and shields.io badge colors (README)
+
+- [ ] **R018** — demo.gif is stale against the new brand colors → *medium*
+  - Why: assets/demo.gif still shows the old GitHub-blue palette; needs re-recording, not just a color swap

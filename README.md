@@ -3,10 +3,10 @@
 [![PyPI](https://img.shields.io/pypi/v/ladder-cli)](https://pypi.org/project/ladder-cli/)
 [![CI](https://github.com/tanamsethi31/ladder/actions/workflows/ci.yml/badge.svg)](https://github.com/tanamsethi31/ladder/actions/workflows/ci.yml)
 [![Python](https://img.shields.io/pypi/pyversions/ladder-cli)](https://pypi.org/project/ladder-cli/)
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![License: MIT](https://img.shields.io/badge/license-MIT-e0a458.svg)](LICENSE)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
-[![Email](https://img.shields.io/badge/email-sethit%40tcd.ie-blue?logo=gmail&logoColor=white)](mailto:sethit@tcd.ie)
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-tanamsethi-blue?logo=linkedin&logoColor=white)](https://linkedin.com/in/tanamsethi)
+[![Email](https://img.shields.io/badge/email-sethit%40tcd.ie-e0a458?logo=gmail&logoColor=white)](mailto:sethit@tcd.ie)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-tanamsethi-e0a458?logo=linkedin&logoColor=white)](https://linkedin.com/in/tanamsethi)
 
 > Track every branch, stage, and alternative path in your AI pair-programming sessions.
 
@@ -117,32 +117,29 @@ you pasting them.
 This project dogfoods itself — its own `.ladder/ladder.md` tracks its own roadmap:
 
 ```
-$ ladder status --stage plugin
+$ ladder status
 
-🪜 ladder  v1  6 done · 0 active · 1 exploring · 0 open · 0 blocked
-
-◐ plugin
-  ?   R008  Hook verbosity: terse pointer vs full status render  → small
-        Went with terse counts+pointer for now to save context tokens
-        every session; revisit if that reads worse in practice than
-        always showing full ladder status
-  ✓   R009  Claude Code plugin: hook + skill  → large
+🪜 ladder  v1  12 done · 0 active · 2 exploring · 0 open · 0 blocked
 
 $ ladder next
 
 🎯 Suggested next rungs
 
 1. R008  Hook verbosity: terse pointer vs full status render  → small
-   Went with terse counts+pointer for now to save context tokens every
-   session; revisit if that reads worse in practice than always showing
-   full ladder status
+   Went with terse counts+pointer for now to save context tokens every session;
+   revisit if that reads worse in practice than always showing full ladder status
 
-💡 `plugin` is 1/2 done — consider finishing it before moving on.
+2. R014  Subtle/prose-only option capture  → large
+   Both Claude's own judgment and the Stop-hook regex heuristic only catch
+   list-formatted or trigger-phrase options; a recommendation woven into plain
+   prose (no list, no 'either/or') likely still slips through both layers
+
+💡 `plugin` is 7/9 done — consider finishing it before moving on.
 ```
 
-Small, well-understood work sorted ahead of bigger bets, automatically — and the
-open decision above (R008) is a real one from building this project's own plugin,
-not a demo placeholder.
+Small, well-understood work sorted ahead of bigger bets, automatically — and both
+open decisions above are real ones from building this project's own plugin, not
+demo placeholders.
 
 ## Commands
 
@@ -179,8 +176,8 @@ not a demo placeholder.
 
 ## Contact
 
-[![Email](https://img.shields.io/badge/email-sethit%40tcd.ie-blue?logo=gmail&logoColor=white)](mailto:sethit@tcd.ie)
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-tanamsethi-blue?logo=linkedin&logoColor=white)](https://linkedin.com/in/tanamsethi)
+[![Email](https://img.shields.io/badge/email-sethit%40tcd.ie-e0a458?logo=gmail&logoColor=white)](mailto:sethit@tcd.ie)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-tanamsethi-e0a458?logo=linkedin&logoColor=white)](https://linkedin.com/in/tanamsethi)
 
 Built by [Tanam Sethi](https://github.com/tanamsethi31). Questions, bug reports, or feature requests — open an [issue](https://github.com/tanamsethi31/ladder/issues) or reach out directly.
 

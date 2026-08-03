@@ -9,6 +9,7 @@ from typer.testing import CliRunner
 import ladder.cli as cli_module
 from ladder.cli import app
 from ladder.core.parser import parse_ladder
+from ladder.core.renderer import LADDER_THEME
 
 runner = CliRunner()
 
@@ -19,7 +20,7 @@ def _isolated_cwd(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.chdir(tmp_path)
     # --no-color reassigns the module-level console global; reset it so that
     # mutation doesn't leak into whichever test happens to run next.
-    monkeypatch.setattr(cli_module, "console", Console())
+    monkeypatch.setattr(cli_module, "console", Console(theme=LADDER_THEME))
 
 
 def test_init(tmp_path: Path) -> None:
