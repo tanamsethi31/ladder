@@ -3,8 +3,10 @@
 from pathlib import Path
 
 import pytest
+from rich.console import Console
 from typer.testing import CliRunner
 
+import ladder.cli as cli_module
 from ladder.cli import app
 from ladder.core.parser import parse_ladder
 
@@ -15,6 +17,9 @@ runner = CliRunner()
 def _isolated_cwd(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     """Run every test in its own empty directory, regardless of typer/click version."""
     monkeypatch.chdir(tmp_path)
+    # --no-color reassigns the module-level console global; reset it so that
+    # mutation doesn't leak into whichever test happens to run next.
+    monkeypatch.setattr(cli_module, "console", Console())
 
 
 def test_init(tmp_path: Path) -> None:
@@ -106,6 +111,14 @@ def test_sprint_default_budget_fits_both() -> None:
     assert result.exit_code == 0
     assert "R001" in result.output
     assert "R002" in result.output
+
+
+def test_no_color_strips_ansi_even_with_force_color(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("FORCE_COLOR", "3")
+    runner.invoke(app, ["init"])
+    result = runner.invoke(app, ["--no-color", "status"])
+    assert result.exit_code == 0
+    assert "\x1b[" not in result.output
 
 
 def test_next() -> None:

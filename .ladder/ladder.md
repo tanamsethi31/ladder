@@ -50,3 +50,13 @@ version: 1
 
 - [x] **R011** — Explicit 'full' override for status/tree → *small*
   - Why: Rule 8 alone had already been rewritten 3x historically and still risked paraphrasing; an explicit non-negotiable trigger phrase is cheaper to try before building transcript-verification enforcement
+
+- [x] **R012** — Strip ANSI from chat-relayed CLI output → *small*
+  - Why: Raw stdout can contain literal ANSI escape bytes (confirmed live, FORCE_COLOR-forced) that would show as garbled text if pasted into a chat code fence
+
+- [x] **R013** — Rule 7 summary must always follow rule 11 full dump → *small*
+  - Why: Live test showed the trailing open-rungs summary was inconsistently included after a full status dump
+
+- [?] **R014** — Subtle/prose-only option capture → *large*
+  - Why: Both Claude's own judgment and the Stop-hook regex heuristic only catch list-formatted or trigger-phrase options; a recommendation woven into plain prose (no list, no 'either/or') likely still slips through both layers
+  - Status: exploring

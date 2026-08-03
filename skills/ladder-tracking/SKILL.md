@@ -28,15 +28,18 @@ vanish into scrollback — the ladder captures them instead.
 6. **If the user says "ladder do R###"**, focus on that rung with full context.
 7. **End every response** with a brief summary of open rungs in the current stage.
 8. **If asked to see the ladder** ("show the ladder", "what's on the ladder", "ladder
-   status", etc.): execute the actual shell command `ladder status` (or `ladder tree`
-   for dependencies) via the terminal/bash tool. This is a different action from Rule
-   1 — do NOT satisfy this by running `cat .ladder/ladder.md` or reading the file
-   with a file-read tool. Take the raw stdout from that command and paste it into the
-   response inside a code fence, character for character. Do not paraphrase it, do not
-   summarize it into a table or bullet list, do not add narration or extra context
-   inside the code fence. The options, blocked-by chains, and why context only
-   survive if the real command output is shown — reconstructing "the same
-   information" from memory reliably drops them.
+   status", etc.): execute the actual shell command `ladder --no-color status` (or
+   `ladder --no-color tree` for dependencies) via the terminal/bash tool — always
+   with `--no-color` when the output is going into your chat response, so a forced
+   terminal color environment can't leak raw ANSI escape bytes into pasted text.
+   This is a different action from Rule 1 — do NOT satisfy this by running `cat
+   .ladder/ladder.md` or reading the file with a file-read tool. Take the raw
+   stdout from that command and paste it into the response inside a code fence,
+   character for character. Do not paraphrase it, do not summarize it into a table
+   or bullet list, do not add narration or extra context inside the code fence. The
+   options, blocked-by chains, and why context only survive if the real command
+   output is shown — reconstructing "the same information" from memory reliably
+   drops them.
 9. **Before the final message in a session**, scan back over what was discussed for
    any options that were presented but never logged, and add them now. A silent miss
    is worse than a slightly noisy ladder — when in doubt, log it.
@@ -45,12 +48,15 @@ vanish into scrollback — the ladder captures them instead.
     existing one), even if the conversation has already moved past it.
 11. **If the user says "ladder status full", "full status", "show the full ladder",
     or otherwise appends "full" to a status/tree request**: this is a hard,
-    non-negotiable override of Rule 8. Run the command, then paste 100% of its raw
-    stdout in the code fence — every stage, every rung, every why/option/blocked-by
-    line, no matter how long. Do not truncate for length, do not paraphrase "the
-    less interesting parts", do not decide part of it isn't worth showing. If you
-    are ever tempted to summarize instead of pasting the complete output, that
-    temptation is the bug this rule exists to stop — paste it anyway.
+    non-negotiable override of Rule 8. Run `ladder --no-color status` (or `tree`),
+    then paste 100% of its raw stdout in the code fence — every stage, every rung,
+    every why/option/blocked-by line, no matter how long. Do not truncate for
+    length, do not paraphrase "the less interesting parts", do not decide part of
+    it isn't worth showing. If you are ever tempted to summarize instead of pasting
+    the complete output, that temptation is the bug this rule exists to stop —
+    paste it anyway. Rule 7 still applies after the fence: always close with the
+    brief open-rungs summary, even though you just showed everything — don't skip
+    it just because the full dump already contains that information.
 
 If you're running as the Claude Code plugin, a `Stop` hook backs up rule 9 — it
 scans every response for signs of an unlogged option (lists, "either X or Y",

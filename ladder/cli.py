@@ -29,6 +29,22 @@ app = typer.Typer(
 )
 console = Console()
 
+
+@app.callback()
+def _main(
+    no_color: bool = typer.Option(
+        False,
+        "--no-color",
+        help="Force plain output with no ANSI codes, regardless of terminal detection "
+        "or FORCE_COLOR. Use this when relaying output somewhere that can't render "
+        "ANSI (e.g. pasting into a chat response) to avoid garbled escape sequences.",
+    ),
+) -> None:
+    if no_color:
+        global console
+        console = Console(no_color=True, force_terminal=False)
+
+
 LADDER_DIR = Path(".ladder")
 LADDER_FILE = LADDER_DIR / "ladder.md"
 DEFAULT_EXPORT_FILE = LADDER_DIR / "ladder.html"
