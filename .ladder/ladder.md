@@ -44,3 +44,6 @@ version: 1
 
 - [x] **R009** — Claude Code plugin: hook + skill → *large*
   - Why: Wire ladder into the agent loop instead of manual copy-paste system prompt
+
+- [x] **R010** — Stop hook: catch unlogged options mid-session → *medium*
+  - Why: Rule 9 only self-checked once at session end; a deterministic Stop hook now nudges after every turn instead

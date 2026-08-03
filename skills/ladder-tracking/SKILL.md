@@ -44,6 +44,12 @@ vanish into scrollback — the ladder captures them instead.
     recent decision or option set as a new rung (or add the missing options to an
     existing one), even if the conversation has already moved past it.
 
+If you're running as the Claude Code plugin, a `Stop` hook backs up rule 9 — it
+scans every response for signs of an unlogged option (lists, "either X or Y",
+"alternatively", etc.) and injects a reminder if it finds one. That catches misses
+mid-session, not just at the end, but it's a cheap heuristic, not a substitute for
+actually following rules 2 and 9 yourself.
+
 ## Status Checkbox Guide
 
 | Char | Status | Meaning |
