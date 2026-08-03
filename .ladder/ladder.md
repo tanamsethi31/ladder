@@ -60,3 +60,6 @@ version: 1
 - [?] **R014** — Subtle/prose-only option capture → *large*
   - Why: Both Claude's own judgment and the Stop-hook regex heuristic only catch list-formatted or trigger-phrase options; a recommendation woven into plain prose (no list, no 'either/or') likely still slips through both layers
   - Status: exploring
+
+- [x] **R015** — HTML export design pass → *medium*
+  - Why: Weakest of the three output surfaces per user feedback; brought it up to the level of the terminal/plugin work

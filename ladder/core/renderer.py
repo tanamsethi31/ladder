@@ -329,90 +329,173 @@ def _rung_css_class(rung: Rung) -> str:
     return "open"
 
 
+def _stage_dot_css_class(stage: Stage) -> str:
+    if stage.is_complete:
+        return "complete"
+    if stage.has_progress:
+        return "progress"
+    if stage.any_done:
+        return "progress"
+    return ""
+
+
+_FAVICON = (
+    "data:image/svg+xml,"
+    "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'>"
+    "<text y='.9em' font-size='90'>%F0%9F%AA%9C</text></svg>"
+)
+
+
 def render_html(ladder: Ladder) -> str:
     """Render the ladder as a static, self-contained HTML page."""
-    stages_html = []
-    for stage in ladder.stages:
-        rows = []
-        for rung in stage.rungs:
-            css = _rung_css_class(rung)
-            effort = escape(rung.effort.value)
-            row = [
-                f'<li class="rung {css}">',
-                '<div class="rung-head">',
-                f'<span class="emoji">{escape(_status_emoji(rung.status))}</span>',
-                f'<span class="id">{escape(rung.id)}</span>',
-                f'<span class="title">{escape(rung.title)}</span>',
-                f'<span class="effort {effort}">{effort}</span>',
-                "</div>",
-            ]
-            if rung.why and not rung.is_done:
-                row.append(f'<p class="why">{escape(rung.why)}</p>')
-            if rung.blocked_by:
-                row.append(
-                    f'<p class="blocked-by">blocked by {escape(", ".join(rung.blocked_by))}</p>'
-                )
-            if rung.options:
-                opts = "".join(
-                    f'<li class="{"chosen" if o.chosen else ""}">'
-                    f"{'✓' if o.chosen else '○'} {escape(o.text)}</li>"
-                    for o in rung.options
-                )
-                row.append(f'<ul class="options">{opts}</ul>')
-            row.append("</li>")
-            rows.append("".join(row))
-
-        stages_html.append(
-            f'<section class="stage">'
-            f'<h2><span class="dot">{escape(_stage_dot(stage))}</span> {escape(stage.name)}</h2>'
-            f'<ul class="rungs">{"".join(rows)}</ul>'
-            f"</section>"
+    if not ladder.stages:
+        stages_html = (
+            '<p class="empty">No stages yet. Run <code>ladder add "First feature"</code> '
+            "to get started.</p>"
         )
+    else:
+        sections = []
+        for stage in ladder.stages:
+            total = len(stage.rungs)
+            done = sum(1 for r in stage.rungs if r.is_done)
+            percent = round(100 * done / total) if total else 0
+
+            rows = []
+            for rung in stage.rungs:
+                css = _rung_css_class(rung)
+                effort = escape(rung.effort.value)
+                row = [
+                    f'<li class="rung {css}">',
+                    '<div class="rung-head">',
+                    f'<span class="emoji">{escape(_status_emoji(rung.status))}</span>',
+                    f'<span class="id">{escape(rung.id)}</span>',
+                    f'<span class="title">{escape(rung.title)}</span>',
+                    f'<span class="effort {effort}">{effort}</span>',
+                    "</div>",
+                ]
+                if rung.why and not rung.is_done:
+                    row.append(f'<p class="why">{escape(rung.why)}</p>')
+                if rung.blocked_by:
+                    row.append(
+                        f'<p class="blocked-by">blocked by {escape(", ".join(rung.blocked_by))}</p>'
+                    )
+                if rung.options:
+                    opts = "".join(
+                        f'<li class="{"chosen" if o.chosen else ""}">'
+                        f"{'✓' if o.chosen else '○'} {escape(o.text)}</li>"
+                        for o in rung.options
+                    )
+                    row.append(f'<ul class="options">{opts}</ul>')
+                row.append("</li>")
+                rows.append("".join(row))
+
+            sections.append(
+                f'<details class="stage"{" open" if not stage.is_complete else ""}>'
+                f'<summary><span class="dot {_stage_dot_css_class(stage)}">'
+                f"{escape(_stage_dot(stage))}</span> "
+                f'<span class="stage-name">{escape(stage.name)}</span>'
+                f'<span class="stage-count">{done}/{total}</span></summary>'
+                f'<div class="bar"><div class="bar-fill" style="width:{percent}%"></div></div>'
+                f'<ul class="rungs">{"".join(rows)}</ul>'
+                f"</details>"
+            )
+        stages_html = "".join(sections)
 
     return f"""<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="{escape(ladder.project)} — decision ladder, exported from Ladder">
+<link rel="icon" href="{_FAVICON}">
 <title>{escape(ladder.project)} — ladder</title>
 <style>
-  body {{ background: #0d1117; color: #c9d1d9; font: 15px/1.5 -apple-system, system-ui, sans-serif;
-         max-width: 860px; margin: 0 auto; padding: 2.5rem 1.5rem; }}
-  h1 {{ font-size: 1.3rem; margin: 0 0 .25rem; }}
-  .summary {{ color: #8b949e; font-size: .9rem; margin-bottom: 2rem; }}
-  h2 {{ font-size: 1rem; text-transform: lowercase; border-bottom: 1px solid #21262d;
-       padding-bottom: .4rem; }}
-  .dot {{ color: #8b949e; }}
+  :root {{
+    --bg: #0d1117; --surface: #161b22; --border: #21262d; --text: #c9d1d9; --dim: #8b949e;
+    --green: #3fb950; --yellow: #d29922; --red: #f85149; --blue: #58a6ff;
+  }}
+  @media (prefers-color-scheme: light) {{
+    :root {{
+      --bg: #f6f8fa; --surface: #ffffff; --border: #d0d7de; --text: #1f2328; --dim: #656d76;
+      --green: #1a7f37; --yellow: #9a6700; --red: #cf222e; --blue: #0969da;
+    }}
+  }}
+  * {{ box-sizing: border-box; }}
+  body {{
+    background: var(--bg); color: var(--text);
+    font: 15px/1.6 ui-sans-serif, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-variant-numeric: tabular-nums;
+    max-width: 780px; margin: 0 auto; padding: 3rem 1.5rem 4rem;
+  }}
+  h1 {{
+    font-size: 1.6rem; font-weight: 700; letter-spacing: -0.02em; margin: 0 0 .35rem;
+    text-wrap: balance;
+  }}
+  .stats {{
+    display: flex; gap: 1px; background: var(--border); border: 1px solid var(--border);
+    border-radius: 8px; overflow: hidden; margin: 1.25rem 0 2.25rem;
+  }}
+  .stat {{ flex: 1; background: var(--surface); padding: .6rem .5rem; text-align: center; }}
+  .stat b {{ display: block; font-size: 1.15rem; font-weight: 700; }}
+  .stat span {{ color: var(--dim); font-size: .72rem; text-transform: uppercase;
+       letter-spacing: .04em; }}
+  .stat.done b {{ color: var(--green); }}
+  .stat.active b {{ color: var(--yellow); }}
+  .stat.exploring b {{ color: var(--blue); }}
+  .stat.blocked b {{ color: var(--red); }}
+  .empty {{ color: var(--dim); }}
+  details.stage {{ margin-bottom: 1.5rem; }}
+  summary {{
+    display: flex; align-items: baseline; gap: .5rem; cursor: pointer; list-style: none;
+    padding-bottom: .5rem; border-bottom: 1px solid var(--border);
+    font-weight: 600; font-size: .95rem;
+  }}
+  summary::-webkit-details-marker {{ display: none; }}
+  .dot {{ color: var(--dim); }}
+  .dot.complete {{ color: var(--green); }}
+  .dot.progress {{ color: var(--yellow); }}
+  .stage-name {{ text-transform: lowercase; flex: 1; }}
+  .stage-count {{ color: var(--dim); font-weight: 400; font-size: .8rem; }}
+  .bar {{ height: 3px; background: var(--border); margin-top: -1px; }}
+  .bar-fill {{ height: 100%; background: var(--green); transition: width .2s; }}
   ul {{ list-style: none; padding: 0; margin: 0; }}
-  .rungs {{ margin: .5rem 0 2rem; }}
-  .rung {{ padding: .6rem 0; border-bottom: 1px solid #161b22; }}
+  .rungs {{ margin-top: .25rem; }}
+  .rung {{
+    padding: .65rem .4rem; border-bottom: 1px solid var(--border); border-radius: 6px;
+    transition: background .15s;
+  }}
+  .rung:hover {{ background: var(--surface); }}
   .rung-head {{ display: flex; align-items: baseline; gap: .6rem; }}
   .emoji {{ width: 1em; }}
-  .id {{ color: #8b949e; font-size: .85rem; }}
+  .id {{ color: var(--dim); font-size: .82rem; font-variant-numeric: tabular-nums; }}
   .title {{ flex: 1; }}
-  .rung.done .title, .rung.blocked .title {{ color: #8b949e; text-decoration: line-through; }}
-  .rung.in-progress .title {{ color: #d29922; font-weight: 600; }}
-  .rung.exploring .title {{ color: #58a6ff; font-style: italic; }}
-  .effort {{ font-size: .8rem; padding: 0 .2rem; }}
-  .effort.small {{ color: #3fb950; }}
-  .effort.medium {{ color: #d29922; }}
-  .effort.large {{ color: #f85149; }}
-  .why, .blocked-by {{ margin: .25rem 0 0 1.6em; color: #8b949e; font-size: .85rem;
-       font-style: italic; }}
-  .blocked-by {{ color: #f85149; font-style: normal; }}
-  .options {{ margin: .35rem 0 0 1.6em; }}
-  .options li {{ color: #8b949e; font-size: .85rem; }}
-  .options li.chosen {{ color: #3fb950; }}
+  .rung.done .title {{ color: var(--dim); text-decoration: line-through; }}
+  .rung.blocked .title {{ color: var(--red); }}
+  .rung.in-progress .title {{ color: var(--yellow); font-weight: 600; }}
+  .rung.exploring .title {{ color: var(--blue); font-style: italic; }}
+  .effort {{ font-size: .78rem; padding: 0 .2rem; font-weight: 500; }}
+  .effort.small {{ color: var(--green); }}
+  .effort.medium {{ color: var(--yellow); }}
+  .effort.large {{ color: var(--red); }}
+  .why, .blocked-by {{
+    margin: .3rem 0 0 1.6em; color: var(--dim); font-size: .85rem; font-style: italic;
+  }}
+  .blocked-by {{ color: var(--red); font-style: normal; }}
+  .options {{ margin: .4rem 0 0 1.6em; }}
+  .options li {{ color: var(--dim); font-size: .85rem; }}
+  .options li.chosen {{ color: var(--green); }}
 </style>
 </head>
 <body>
 <h1>🪜 {escape(ladder.project)}</h1>
-<p class="summary">v{ladder.version} &middot;
-  {ladder.completed_count} done &middot;
-  {ladder.in_progress_count} active &middot;
-  {ladder.exploring_count} exploring &middot;
-  {ladder.open_count} open &middot;
-  {ladder.blocked_count} blocked</p>
-{"".join(stages_html)}
+<div class="stats">
+  <div class="stat done"><b>{ladder.completed_count}</b><span>done</span></div>
+  <div class="stat active"><b>{ladder.in_progress_count}</b><span>active</span></div>
+  <div class="stat exploring"><b>{ladder.exploring_count}</b><span>exploring</span></div>
+  <div class="stat"><b>{ladder.open_count}</b><span>open</span></div>
+  <div class="stat blocked"><b>{ladder.blocked_count}</b><span>blocked</span></div>
+</div>
+{stages_html}
 </body>
 </html>
 """
