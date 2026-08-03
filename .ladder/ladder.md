@@ -38,9 +38,9 @@ version: 1
 
 ## plugin
 
-- [?] **R008** — Hook verbosity: terse pointer vs full status render → *small*
+- [▶] **R008** — Hook verbosity: terse pointer vs full status render → *small*
   - Why: Went with terse counts+pointer for now to save context tokens every session; revisit if that reads worse in practice than always showing full ladder status
-  - Status: exploring
+  - Status: in_progress
 
 - [x] **R009** — Claude Code plugin: hook + skill → *large*
   - Why: Wire ladder into the agent loop instead of manual copy-paste system prompt
@@ -75,3 +75,6 @@ version: 1
 
 - [x] **R019** — Enforce status-relay via UserPromptSubmit+Stop hook block → *large*
   - Why: Rule 11 (hard, non-negotiable, paste 100%) was violated on the very first real dogfood test - I paraphrased instead of pasting, twice. Prompt wording alone is proven unreliable; needed actual enforcement that blocks the turn until the real output is verifiably present
+
+- [x] **R020** — Stop hook false-positive: bare lists triggered constantly → *small*
+  - Why: Structural '2+ list items' check fired on nearly every multi-point response (status recaps, step lists) regardless of content; removed it, kept only explicit choice-language patterns

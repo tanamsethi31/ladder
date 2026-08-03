@@ -7,9 +7,14 @@
    BLOCK the stop and force a redo — a plain reminder already proved unreliable in
    practice (rule 11 was worded as a hard, non-negotiable override and still got
    silently skipped in favor of a paraphrased summary).
-2. Unlogged-options nudge: cheap regex heuristic, no LLM call, catches signs of an
-   unlogged decision (lists, "either X or Y", "alternatively") and reminds mid-
-   session instead of only at the end.
+2. Unlogged-options nudge: cheap regex heuristic, no LLM call, catches explicit
+   choice language ("either X or Y", "alternatively", "option A/B") and reminds
+   mid-session instead of only at the end. Deliberately does NOT fire on bare
+   numbered/bulleted lists — that fired constantly on ordinary structured notes
+   (status recaps, step lists) with almost no real catches, net-negative signal.
+   A plain enumerated list with no choice language is exactly the harder gap
+   logged as R014 (prose/plain-list option capture) — not something this cheap
+   heuristic can fix without becoming noisy again.
 """
 
 from __future__ import annotations
@@ -24,7 +29,6 @@ import tempfile
 from pathlib import Path
 
 SIGNAL_PATTERNS = [
-    r"(?:^|\n)\s*(?:[-*]|\d+[.)])\s+.+\n\s*(?:[-*]|\d+[.)])\s+.+",  # 2+ list items in a row
     r"\b(?:option [ab12]\b|either .+ or |alternatively|we could instead|"
     r"another (?:option|approach|path)|you (?:could|might want to))\b",
 ]
@@ -131,11 +135,24 @@ def main() -> None:
 if __name__ == "__main__":
     if "--selftest" in sys.argv:
         assert looks_like_unlogged_options("- Option A\n- Option B") is True
-        assert looks_like_unlogged_options("1. do this\n2. do that") is True
         assert looks_like_unlogged_options("We could either use Redis or Postgres.")
         assert looks_like_unlogged_options("Alternatively, we could cache it.")
         assert looks_like_unlogged_options("Fixed the bug in parser.py, line 42.") is False
         assert looks_like_unlogged_options("Done. Tests pass.") is False
+        # Regression: bare numbered/bulleted lists with no choice language must NOT
+        # fire — this was the actual false-positive source in real dogfooding
+        # (status recaps, step lists, "here's what's proven" summaries).
+        assert looks_like_unlogged_options("1. do this\n2. do that") is False
+        assert (
+            looks_like_unlogged_options(
+                "1. The real gap is X\n2. You'll need to restart to apply it"
+            )
+            is False
+        )
+        assert (
+            looks_like_unlogged_options("- R008 is exploring\n- R014 is exploring\n- R018 is open")
+            is False
+        )
         print("ok")
         sys.exit(0)
     main()
