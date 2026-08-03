@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import sys
 from datetime import datetime
 from pathlib import Path
 
@@ -10,6 +11,7 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.text import Text
 
+from ladder.core.checks import looks_like_unlogged_options
 from ladder.core.git import auto_commit
 from ladder.core.models import Effort, Ladder, Rung, Stage, Status
 from ladder.core.parser import parse_ladder, write_ladder
@@ -468,6 +470,37 @@ def export(
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(render_html(ladder), encoding="utf-8")
     console.print(f"[success]✓[/success] Exported ladder to [bold]{out_path}[/bold]")
+
+
+@app.command()
+def scan(
+    text: str = typer.Argument(None, help="Text to scan. Reads from stdin if omitted."),
+    json_output: bool = typer.Option(
+        False, "--json", help='Output {"flagged": bool, "reason": str} instead of plain text.'
+    ),
+) -> None:
+    """Scan text for signs of an unlogged decision/option. No ladder required.
+
+    Provider-agnostic: any tool's hook or rule system (Claude Code, Cursor
+    rules, Copilot instructions, a raw shell script) can shell out to this
+    instead of reimplementing the check. Exits 1 if flagged, 0 otherwise.
+    """
+    if text is None:
+        text = sys.stdin.read()
+
+    flagged = looks_like_unlogged_options(text)
+    reason = (
+        "This text may present an option or decision point that isn't logged yet."
+        if flagged
+        else ""
+    )
+
+    if json_output:
+        console.print_json(data={"flagged": flagged, "reason": reason})
+    elif flagged:
+        console.print(reason)
+
+    raise typer.Exit(1 if flagged else 0)
 
 
 @app.command()

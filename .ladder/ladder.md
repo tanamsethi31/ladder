@@ -57,10 +57,10 @@ version: 1
 - [x] **R013** — Rule 7 summary must always follow rule 11 full dump → *small*
   - Why: Live test showed the trailing open-rungs summary was inconsistently included after a full status dump
 
-- [?] **R014** — Subtle/prose-only option capture → *large*
+- [▶] **R014** — Subtle/prose-only option capture → *large*
   - Why: Both Claude's own judgment and the Stop-hook regex heuristic only catch list-formatted or trigger-phrase options; a recommendation woven into plain prose (no list, no 'either/or') likely still slips through both layers
-  - Note: Root-cause fix designed: add a type:'prompt' Stop hook (Haiku, verified contract via the hooks guide - returns {ok,reason}, reason feeds back to Claude on Stop like the status-relay block does) alongside the existing regex first-pass, since 'was a decision presented' is a semantic task regex can't solve. Two paths on when to ship it: (a) build now as a preventive fix, since the design is verified and ready, or (b) instrument first and confirm real prose-buried misses actually happen in dogfooding before adding a permanent per-turn LLM cost - unlike the status-relay bug, this gap hasn't been directly observed yet, only reasoned from first principles. Awaiting decision.
-  - Status: exploring
+  - Note: Part 1 shipped: 'ladder scan <text>' is now a real CLI command (ladder/core/checks.py + cli.py), provider-agnostic and reusable by any tool's hook system, not just Claude Code. The plugin's stop_check.py now delegates to it via subprocess instead of duplicating the regex - single source of truth. Part 2 (the actual LLM semantic layer, type:'prompt' Stop hook) still pending.
+  - Status: in_progress
 
 - [x] **R015** — HTML export design pass → *medium*
   - Why: Weakest of the three output surfaces per user feedback; brought it up to the level of the terminal/plugin work

@@ -1,5 +1,6 @@
 """Tests for CLI commands."""
 
+import json
 from pathlib import Path
 
 import pytest
@@ -120,6 +121,37 @@ def test_no_color_strips_ansi_even_with_force_color(monkeypatch: pytest.MonkeyPa
     result = runner.invoke(app, ["--no-color", "status"])
     assert result.exit_code == 0
     assert "\x1b[" not in result.output
+
+
+def test_scan_flagged_exits_1() -> None:
+    result = runner.invoke(app, ["scan", "We could either use Redis or Postgres."])
+    assert result.exit_code == 1
+    assert "may present an option" in result.output
+
+
+def test_scan_clean_exits_0() -> None:
+    result = runner.invoke(app, ["scan", "Fixed the bug in parser.py."])
+    assert result.exit_code == 0
+    assert result.output == ""
+
+
+def test_scan_json_output() -> None:
+    result = runner.invoke(app, ["--no-color", "scan", "--json", "Alternatively, cache it."])
+    assert result.exit_code == 1
+    data = json.loads(result.output)
+    assert data["flagged"] is True
+    assert data["reason"]
+
+
+def test_scan_reads_stdin_when_no_arg() -> None:
+    result = runner.invoke(app, ["scan"], input="Fixed the bug.")
+    assert result.exit_code == 0
+
+
+def test_scan_works_with_no_ladder(tmp_path: Path) -> None:
+    # No `ladder init` here — scan must not require a ladder to exist
+    result = runner.invoke(app, ["scan", "Done."])
+    assert result.exit_code == 0
 
 
 def test_next() -> None:

@@ -11,7 +11,7 @@
       "name": "ladder",
       "source": "./",
       "description": "Track every branch, stage, and alternative path in your AI pair-programming sessions.",
-      "version": "0.4.1"
+      "version": "0.5.0"
     }
   ]
 }

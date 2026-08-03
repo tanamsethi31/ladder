@@ -7,14 +7,16 @@
    BLOCK the stop and force a redo — a plain reminder already proved unreliable in
    practice (rule 11 was worded as a hard, non-negotiable override and still got
    silently skipped in favor of a paraphrased summary).
-2. Unlogged-options nudge: cheap regex heuristic, no LLM call, catches explicit
-   choice language ("either X or Y", "alternatively", "option A/B") and reminds
-   mid-session instead of only at the end. Deliberately does NOT fire on bare
-   numbered/bulleted lists — that fired constantly on ordinary structured notes
-   (status recaps, step lists) with almost no real catches, net-negative signal.
-   A plain enumerated list with no choice language is exactly the harder gap
-   logged as R014 (prose/plain-list option capture) — not something this cheap
-   heuristic can fix without becoming noisy again.
+2. Unlogged-options nudge: delegates to `ladder scan` — the CLI's own reusable,
+   provider-agnostic check (see ladder/core/checks.py) — instead of duplicating
+   the heuristic here. Cheap regex, no LLM call, catches explicit choice language
+   ("either X or Y", "alternatively", "option A/B") and reminds mid-session
+   instead of only at the end. Deliberately does NOT fire on bare numbered/
+   bulleted lists — that fired constantly on ordinary structured notes (status
+   recaps, step lists) with almost no real catches, net-negative signal. A plain
+   enumerated list with no choice language is exactly the harder gap logged as
+   R014 (prose/plain-list option capture) — not something this cheap heuristic
+   can fix without becoming noisy again.
 """
 
 from __future__ import annotations
@@ -28,16 +30,29 @@ import sys
 import tempfile
 from pathlib import Path
 
-SIGNAL_PATTERNS = [
-    r"\b(?:option [ab12]\b|either .+ or |alternatively|we could instead|"
-    r"another (?:option|approach|path)|you (?:could|might want to))\b",
-]
 RUNG_ID_RE = re.compile(r"\bR\d{3,}\b")
 MAX_BLOCK_ATTEMPTS = 3
 
 
 def looks_like_unlogged_options(text: str) -> bool:
-    return any(re.search(p, text, re.IGNORECASE) for p in SIGNAL_PATTERNS)
+    """Delegates to `ladder scan --json`, the CLI's own reusable check, instead
+    of duplicating the regex here."""
+    if shutil.which("ladder") is None:
+        return False
+    env = dict(os.environ, NO_COLOR="1")
+    env.pop("FORCE_COLOR", None)
+    result = subprocess.run(
+        ["ladder", "--no-color", "scan", "--json"],
+        input=text,
+        capture_output=True,
+        text=True,
+        timeout=10,
+        env=env,
+    )
+    try:
+        return bool(json.loads(result.stdout).get("flagged", False))
+    except (json.JSONDecodeError, AttributeError):
+        return False
 
 
 def _marker_path(session_id: str) -> Path:

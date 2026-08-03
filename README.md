@@ -163,6 +163,7 @@ gap it wasn't looking for.
 | `ladder note R003 "text"` | Attach a note to a rung |
 | `ladder sprint --budget 5` | Pick unblocked rungs that fit an effort budget |
 | `ladder export` | Export the ladder as a static HTML file |
+| `ladder scan <text>` | Check text for signs of an unlogged decision (no ladder required — reusable by any tool's hook system) |
 | `ladder prompt` | Print the system prompt for your AI |
 
 ## Why Ladder?

@@ -98,7 +98,8 @@ actual enforcement, not just reminders — a plain instruction (even one worded 
 
 `ladder status`, `ladder next`, `ladder sprint --budget N`, `ladder show R###`,
 `ladder note R### "text"`, `ladder do/complete/abandon/explore/reject R###`,
-`ladder tree`, `ladder export`.
+`ladder tree`, `ladder export`, `ladder scan <text>` (checks text for signs of
+an unlogged decision — no ladder required, used internally by the Stop hook).
 
 ## Example
 
