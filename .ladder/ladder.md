@@ -59,6 +59,7 @@ version: 1
 
 - [?] **R014** — Subtle/prose-only option capture → *large*
   - Why: Both Claude's own judgment and the Stop-hook regex heuristic only catch list-formatted or trigger-phrase options; a recommendation woven into plain prose (no list, no 'either/or') likely still slips through both layers
+  - Note: Root-cause fix designed: add a type:'prompt' Stop hook (Haiku, verified contract via the hooks guide - returns {ok,reason}, reason feeds back to Claude on Stop like the status-relay block does) alongside the existing regex first-pass, since 'was a decision presented' is a semantic task regex can't solve. Two paths on when to ship it: (a) build now as a preventive fix, since the design is verified and ready, or (b) instrument first and confirm real prose-buried misses actually happen in dogfooding before adding a permanent per-turn LLM cost - unlike the status-relay bug, this gap hasn't been directly observed yet, only reasoned from first principles. Awaiting decision.
   - Status: exploring
 
 - [x] **R015** — HTML export design pass → *medium*
