@@ -57,10 +57,9 @@ version: 1
 - [x] **R013** — Rule 7 summary must always follow rule 11 full dump → *small*
   - Why: Live test showed the trailing open-rungs summary was inconsistently included after a full status dump
 
-- [▶] **R014** — Subtle/prose-only option capture → *large*
+- [x] **R014** — Subtle/prose-only option capture → *large*
   - Why: Both Claude's own judgment and the Stop-hook regex heuristic only catch list-formatted or trigger-phrase options; a recommendation woven into plain prose (no list, no 'either/or') likely still slips through both layers
-  - Note: Part 1 shipped: 'ladder scan <text>' is now a real CLI command (ladder/core/checks.py + cli.py), provider-agnostic and reusable by any tool's hook system, not just Claude Code. The plugin's stop_check.py now delegates to it via subprocess instead of duplicating the regex - single source of truth. Part 2 (the actual LLM semantic layer, type:'prompt' Stop hook) still pending.
-  - Status: in_progress
+  - Note: Part 2 shipped: type:'prompt' Stop hook (Haiku, verified {ok,reason} contract via the hooks guide) added alongside the existing regex/ladder-scan first-pass. Live-tested: correctly flagged a genuinely prose-only recommendation (no list, no either/or - the exact case R014 was created for) and the model explicitly referenced 'the hook's suggestion' in its response. Clean on a trivial response (2+2). One oddity noted, not a functional bug: in an empty-directory/no-ladder edge case, the response text itself narrated the hook's internal {ok:true} JSON rather than just answering cleanly - likely a prompt-phrasing artifact from an unusually-constrained test question in a contrived empty dir, not a real false-positive (no spurious block/nudge occurred). Worth another look if it recurs in real dogfooding.
 
 - [x] **R015** — HTML export design pass → *medium*
   - Why: Weakest of the three output surfaces per user feedback; brought it up to the level of the terminal/plugin work

@@ -1,7 +1,7 @@
 {
   "name": "ladder",
   "displayName": "Ladder",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "Track every branch, stage, and alternative path in your AI pair-programming sessions.",
   "author": {
     "name": "Tanam Sethi",

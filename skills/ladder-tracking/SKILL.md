@@ -62,12 +62,17 @@ If you're running as the Claude Code plugin, two hooks back up rules 8/9/11 with
 actual enforcement, not just reminders — a plain instruction (even one worded as
 "non-negotiable") was proven unreliable in practice:
 
-- A `Stop` hook scans every response for explicit choice language ("either X or
-  Y", "alternatively", "option A/B", etc.) and injects a reminder if it finds one.
-  Catches misses mid-session, not just at the end — but it's a cheap heuristic
-  (deliberately doesn't fire on bare numbered/bulleted lists — that fired
-  constantly on ordinary structured notes with almost no real catches), not a
-  substitute for actually following rules 2 and 9 yourself.
+- A `Stop` hook runs two layers to catch unlogged options — regex alone can't
+  solve this, since "was a decision presented" is a semantic question, not a
+  lexical one. First, a cheap regex first-pass (`ladder scan`, also a standalone
+  CLI command — see below) catches explicit choice language ("either X or Y",
+  "alternatively", "option A/B"). Deliberately does NOT fire on bare numbered/
+  bulleted lists — that fired constantly on ordinary structured notes with
+  almost no real catches. Second, a `type: "prompt"` hook (Haiku) makes an
+  actual semantic judgment call on the response — catches a recommendation
+  woven into plain prose with no list or choice-language markers at all, which
+  the regex structurally cannot. Together these back up rules 2 and 9, not
+  replace them.
 - A `UserPromptSubmit` hook detects a status/tree/"full" request and records what's
   expected; the `Stop` hook then independently re-runs the real command and checks
   whether its actual output appears verbatim in the response. If it doesn't —

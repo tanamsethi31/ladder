@@ -30,6 +30,10 @@
             "type": "command",
             "command": "python3",
             "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/stop_check.py"]
+          },
+          {
+            "type": "prompt",
+            "prompt": "This is a Stop hook firing after an AI coding assistant's response in a project that may use a \"ladder\" decision-tracking file (.ladder/ladder.md). Hook input: $ARGUMENTS\n\nLook at the \"last_assistant_message\" field. Does it present a genuine choice, tradeoff, or recommendation between different technical approaches - even phrased as plain prose with no list or \"either/or\" wording (e.g. \"I'd lean toward Postgres here since it's simpler operationally, though Redis gives better tail latency\")?\n\nDo NOT flag: simple status updates, task completions, explanations of an already-made decision, informational lists that just restate facts or steps rather than alternatives, or anything at all if there's no clear evidence this project actively uses a decision ladder.\n\nRespond {\"ok\": true} if nothing new needs logging. Respond {\"ok\": false, \"reason\": \"<one sentence: what decision/options should be logged in .ladder/ladder.md per the ladder-tracking skill>\"} if something was missed."
           }
         ]
       }
