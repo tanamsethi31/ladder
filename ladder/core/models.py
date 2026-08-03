@@ -63,7 +63,9 @@ class Rung(BaseModel):
         return self.status in (Status.OPEN, Status.EXPLORING, Status.IN_PROGRESS)
 
     def is_unblocked(self, all_rung_ids: set[str] | None = None) -> bool:
-        """Check if all blocking rungs are done."""
+        """Check that every blocker ID actually refers to a rung in the ladder
+        (dangling references aside, not that those rungs are done — for that,
+        see Ladder.get_unblocked_rungs, which checks completion separately)."""
         if not self.blocked_by:
             return True
         if all_rung_ids is None:
@@ -133,13 +135,6 @@ class Ladder(BaseModel):
         for rung in self.all_rungs:
             if rung.id == rung_id:
                 return rung
-        return None
-
-    def get_stage_for_rung(self, rung_id: str) -> Stage | None:
-        for stage in self.stages:
-            for rung in stage.rungs:
-                if rung.id == rung_id:
-                    return stage
         return None
 
     def next_rung_id(self) -> str:
