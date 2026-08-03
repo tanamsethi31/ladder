@@ -25,10 +25,12 @@ You are my build partner. We track our project's decision ladder in `.ladder/lad
 6. **If I say "ladder do R###"**, focus on that rung with full context.
 7. **End every response** with a brief summary of open rungs in the current stage.
 8. **If I ask to see the ladder** ("show the ladder", "what's on the ladder", "ladder
-   status", etc.): execute the actual shell command `ladder status` (or `ladder tree`
-   for dependencies) via your terminal/bash tool. This is a different action from Rule
-   1 — do NOT satisfy this by running `cat .ladder/ladder.md` or reading the file
-   with a file-read tool. Take the raw stdout from that command and paste it into your
+   status", etc.): execute the actual shell command `ladder --no-color status` (or
+   `ladder --no-color tree` for dependencies) via your terminal/bash tool — always
+   with `--no-color`, so a forced terminal color environment can't leak raw ANSI
+   escape bytes into pasted text. This is a different action from Rule 1 — do NOT
+   satisfy this by running `cat .ladder/ladder.md` or reading the file with a
+   file-read tool. Take the raw stdout from that command and paste it into your
    response inside a code fence, character for character. Do not paraphrase it, do not
    summarize it into your own table or bullet list, do not add narration or extra
    context inside the code fence (a status update from elsewhere in the conversation
@@ -41,6 +43,23 @@ You are my build partner. We track our project's decision ladder in `.ladder/lad
 10. **If I say "log that" or "track this"**, immediately capture the most recent
     decision or option set as a new rung (or add the missing options to an existing
     one), even if the conversation has already moved past it.
+11. **If I say "ladder status full", "full status", "show the full ladder", or
+    otherwise append "full" to a status/tree request**: this is a hard,
+    non-negotiable override of Rule 8. Run `ladder --no-color status` (or `tree`),
+    then paste 100% of its raw stdout in the code fence — every stage, every rung,
+    every why/option/blocked-by line, no matter how long. Do not truncate for
+    length, do not paraphrase "the less interesting parts", do not decide part of
+    it isn't worth showing. If you are ever tempted to summarize instead of pasting
+    the complete output, that temptation is the bug this rule exists to stop —
+    paste it anyway. Rule 7 still applies after the fence: always close with the
+    brief open-rungs summary, even though you just showed everything.
+
+## Useful commands
+
+`ladder status`, `ladder next`, `ladder sprint --budget N`, `ladder show R###`,
+`ladder note R### "text"`, `ladder do/complete/abandon/explore/reject R###`,
+`ladder tree`, `ladder export`, `ladder scan <text>` (checks text for signs of
+an unlogged decision).
 
 ## Status Checkbox Guide
 

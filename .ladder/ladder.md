@@ -82,3 +82,7 @@ version: 1
 - [?] **R021** — Ambiguous pronoun references to rungs are unreliable → *medium*
   - Why: Discovered via R008's A/B test: 'why is that still undecided' with multiple candidate rungs failed in both terse (derailed into logging talk, never answered) and full (confidently named the wrong rung) conditions. Not a terse-vs-full issue - a real, separate gap in resolving vague references when several rungs could match.
   - Status: exploring
+
+- [x] **R022** — system.md (universal prompt) was stale vs SKILL.md → *medium*
+  - Why: Missing rule 11 entirely (the hard 'full' override) and the Useful commands section - anyone using ladder via Cursor/Copilot/ChatGPT copy-paste had strictly weaker protection against the exact paraphrasing failure I hit myself, with zero hook backup to compensate since that's Claude-Code-specific
+  - Note: Verified fixed via 3 live tests using Claude with --append-system-prompt only (no --plugin-dir, no hooks, no skill auto-load) - simulates exactly what a Cursor/Copilot/ChatGPT user experiences. Rule 8 (real status output): pass. Rule 2 (log a plain-language decision): pass, verified the actual file content + ladder validate, not just the claimed response. Rule 11 (full override, zero hook backup): pass, complete correct output. The universal prompt-only mechanism genuinely works once the prompt itself is kept in sync.
