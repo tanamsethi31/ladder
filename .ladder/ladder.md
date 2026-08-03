@@ -93,3 +93,6 @@ version: 1
 
 - [x] **R024** — Hardening pass: models.py tests + dead code + misleading docstring → *medium*
   - Why: get_stage_for_rung was defined but never called anywhere - deleted. is_unblocked()'s docstring claimed it checks if blockers are done, but it only checks blocker-ID existence; the real done-check lives separately in get_unblocked_rungs. Fixed the docstring to be honest rather than refactor working, tested logic. models.py and parser.py now both 100% covered, git.py 91%.
+
+- [ ] **R025** — Hardening: renderer.py pure functions + validate command's other rules → *medium*
+  - Why: renderer.py's status/style mapping functions and cli.py's validate command had 4 of 5 error types and all 3 warning types completely untested - only the broken-blocker error had coverage. Also caught my own test-writing bug: ABANDONED counts as done, so [DONE, ABANDONED] is fully complete, not the any-done-no-progress case I assumed.
