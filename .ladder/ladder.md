@@ -38,9 +38,10 @@ version: 1
 
 ## plugin
 
-- [x] **R008** — Hook verbosity: terse pointer vs full status render → *small*
+- [?] **R008** — Hook verbosity: terse pointer vs full status render → *small*
   - Why: Went with terse counts+pointer for now to save context tokens every session; revisit if that reads worse in practice than always showing full ladder status
-  - Note: Resolved: keep terse. Tested across fresh/big/empty projects - SessionStart correctly reports exact counts every time with zero tool calls. The real argument for full-by-default was reliability of getting full detail on demand, which was the actual bug (R019/R020 fixed it independently). Terse + reliable full-on-demand beats full-every-session's token cost.
+  - Note: Reopened - the earlier 'resolved' note overstated the evidence. What's actually shown: terse SessionStart answers correctly (tested fresh/big/empty), and the real token cost is now quantified (250 tok on a fresh project, 782 tok on this repo's 16 rungs, ~13-48x terse - modest, not overwhelming). What's still missing: no side-by-side test of whether lacking why/blocked-by/options in terse ever causes worse behavior, and no real multi-day dogfood signal from jobagent/hanuman/aviation-finance-insights - this was resolved in one sitting from synthetic tests. Leaving as exploring until real usage settles it, per the original framing.
+  - Status: exploring
 
 - [x] **R009** — Claude Code plugin: hook + skill → *large*
   - Why: Wire ladder into the agent loop instead of manual copy-paste system prompt

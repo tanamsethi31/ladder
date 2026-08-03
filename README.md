@@ -119,27 +119,32 @@ This project dogfoods itself — its own `.ladder/ladder.md` tracks its own road
 ```
 $ ladder status
 
-🪜 ladder  v1  16 done · 0 active · 1 exploring · 1 open · 0 blocked
+🪜 ladder  v1  15 done · 0 active · 2 exploring · 1 open · 0 blocked
 
 $ ladder next
 
 🎯 Suggested next rungs
 
-1. R018  demo.gif is stale against the new brand colors  → medium
+1. R008  Hook verbosity: terse pointer vs full status render  → small
+   Went with terse counts+pointer for now to save context tokens every session;
+   revisit if that reads worse in practice than always showing full ladder status
+
+2. R018  demo.gif is stale against the new brand colors  → medium
    assets/demo.gif still shows the old GitHub-blue palette; needs re-recording,
    not just a color swap
 
-2. R014  Subtle/prose-only option capture  → large
+3. R014  Subtle/prose-only option capture  → large
    Both Claude's own judgment and the Stop-hook regex heuristic only catch
    list-formatted or trigger-phrase options; a recommendation woven into plain
    prose (no list, no 'either/or') likely still slips through both layers
 
-💡 `plugin` is 11/13 done — consider finishing it before moving on.
+💡 `plugin` is 10/13 done — consider finishing it before moving on.
 ```
 
-Small, well-understood work sorted ahead of bigger bets, automatically — and both
-items above are real ones from building this project's own plugin, not demo
-placeholders.
+Small, well-understood work sorted ahead of bigger bets, automatically — and all
+three items above are real ones from building this project's own plugin, not
+demo placeholders. (R008 was briefly marked resolved, then honestly reopened —
+one sitting of synthetic testing isn't the same as real usage settling it.)
 
 ## Commands
 
