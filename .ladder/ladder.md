@@ -38,9 +38,9 @@ version: 1
 
 ## plugin
 
-- [▶] **R008** — Hook verbosity: terse pointer vs full status render → *small*
+- [x] **R008** — Hook verbosity: terse pointer vs full status render → *small*
   - Why: Went with terse counts+pointer for now to save context tokens every session; revisit if that reads worse in practice than always showing full ladder status
-  - Status: in_progress
+  - Note: Resolved: keep terse. Tested across fresh/big/empty projects - SessionStart correctly reports exact counts every time with zero tool calls. The real argument for full-by-default was reliability of getting full detail on demand, which was the actual bug (R019/R020 fixed it independently). Terse + reliable full-on-demand beats full-every-session's token cost.
 
 - [x] **R009** — Claude Code plugin: hook + skill → *large*
   - Why: Wire ladder into the agent loop instead of manual copy-paste system prompt
