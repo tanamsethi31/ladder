@@ -96,3 +96,8 @@ version: 1
 
 - [x] **R025** — Hardening: renderer.py pure functions + validate command's other rules → *medium*
   - Why: renderer.py's status/style mapping functions and cli.py's validate command had 4 of 5 error types and all 3 warning types completely untested - only the broken-blocker error had coverage. Also caught my own test-writing bug: ABANDONED counts as done, so [DONE, ABANDONED] is fully complete, not the any-done-no-progress case I assumed.
+
+- [x] **R026** — Hardening: cli.py next/prompt/_priority_sort_key + git.py auto_commit tests → *medium*
+  - Context: Continuation of the systematic coverage-gap hardening pass across the core module
+  - Why: Closed the remaining untested branches so cli.py is fully exercised, not just its happy paths
+  - Note: Covered: next() empty-unblocked branch + waiting-on-dependencies listing, next() stage-progression nudge, prompt command (happy path + missing-file fallback), abandon, all single-rung not-found paths (show/do/complete/abandon/explore/reject), no-ladder error message, init-twice no-overwrite, add's new-stage/blocker-warning/parent-warning/blocked-by-line branches, and _priority_sort_key's for-else fallback when a rung isn't in any stage. cli.py coverage 79%->99% (only the __main__ guard left, not worth testing). Full suite: 108 passed, ruff/mypy clean.

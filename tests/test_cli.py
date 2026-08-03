@@ -38,6 +38,24 @@ def test_status() -> None:
     assert "foundation" in result.output
 
 
+def test_no_ladder_shows_helpful_error() -> None:
+    # No `ladder init` here at all
+    result = runner.invoke(app, ["status"])
+    assert result.exit_code == 1
+    assert "No ladder found" in result.output
+    assert "ladder init" in result.output
+
+
+def test_init_twice_does_not_overwrite(tmp_path: Path) -> None:
+    runner.invoke(app, ["init", "--project", "Original"])
+    result = runner.invoke(app, ["init", "--project", "Overwrite Attempt"])
+    assert result.exit_code == 0
+    assert "already exists" in result.output
+
+    ladder = parse_ladder(Path(tmp_path, ".ladder", "ladder.md"))
+    assert ladder.project == "Original"
+
+
 def test_add(tmp_path: Path) -> None:
     runner.invoke(app, ["init"])
     result = runner.invoke(
@@ -62,6 +80,38 @@ def test_add(tmp_path: Path) -> None:
     ladder = parse_ladder(Path(tmp_path, ".ladder", "ladder.md"))
     assert ladder.get_rung("R003") is not None
     assert ladder.get_rung("R003").title == "New Feature"
+
+
+def test_add_creates_new_stage_when_missing(tmp_path: Path) -> None:
+    runner.invoke(app, ["init"])
+    result = runner.invoke(app, ["add", "First billing task", "--stage", "billing"])
+    assert result.exit_code == 0
+    assert "Created new stage: billing" in result.output
+
+    ladder = parse_ladder(Path(tmp_path, ".ladder", "ladder.md"))
+    stage_names = [s.name for s in ladder.stages]
+    assert "billing" in stage_names
+
+
+def test_add_warns_on_nonexistent_blocker() -> None:
+    runner.invoke(app, ["init"])
+    result = runner.invoke(app, ["add", "Needs a blocker", "--blocked-by", "R999"])
+    assert result.exit_code == 0
+    assert "blocker R999 does not exist yet" in result.output
+
+
+def test_add_warns_on_nonexistent_parent() -> None:
+    runner.invoke(app, ["init"])
+    result = runner.invoke(app, ["add", "Has a parent", "--parent", "R999"])
+    assert result.exit_code == 0
+    assert "parent R999 does not exist yet" in result.output
+
+
+def test_add_prints_blocked_by_line_when_blockers_given() -> None:
+    runner.invoke(app, ["init"])
+    result = runner.invoke(app, ["add", "Blocked task", "--blocked-by", "R001"])
+    assert result.exit_code == 0
+    assert "Blocked by: R001" in result.output
 
 
 def test_add_invalid_effort() -> None:
@@ -160,6 +210,33 @@ def test_next() -> None:
     result = runner.invoke(app, ["next"])
     assert result.exit_code == 0
     assert "R001" in result.output or "R002" in result.output
+
+
+def test_next_reports_no_unblocked_rungs_and_their_blockers() -> None:
+    runner.invoke(app, ["init"])
+    runner.invoke(app, ["complete", "R001"])
+    runner.invoke(app, ["complete", "R002"])
+    # R003 and R004 block each other, so neither is ever unblocked.
+    runner.invoke(app, ["add", "Needs R004", "--blocked-by", "R004"])
+    runner.invoke(app, ["add", "Needs R003", "--blocked-by", "R003"])
+
+    result = runner.invoke(app, ["next"])
+    assert result.exit_code == 0
+    assert "No unblocked rungs available" in result.output
+    assert "waiting on dependencies" in result.output
+    assert "R003 → blocked by R004" in result.output
+    assert "R004 → blocked by R003" in result.output
+
+
+def test_next_nudges_when_stage_half_done() -> None:
+    runner.invoke(app, ["init"])
+    runner.invoke(app, ["add", "Second foundation task", "--stage", "foundation"])
+    runner.invoke(app, ["complete", "R001"])
+
+    result = runner.invoke(app, ["next"])
+    assert result.exit_code == 0
+    assert "`foundation` is 1/2 done" in result.output
+    assert "consider finishing it before moving on" in result.output
 
 
 def test_validate_clean() -> None:
@@ -317,6 +394,26 @@ def test_explore_and_reject() -> None:
     assert "Rejected" in result.output
 
 
+def test_abandon() -> None:
+    runner.invoke(app, ["init"])
+    result = runner.invoke(app, ["abandon", "R001", "--reason", "no longer needed"])
+    assert result.exit_code == 0
+    assert "Abandoned" in result.output
+
+    ladder = parse_ladder(Path(".ladder", "ladder.md"))
+    rung = ladder.get_rung("R001")
+    assert rung is not None
+    assert rung.note == "Abandoned: no longer needed"
+
+
+@pytest.mark.parametrize("command", ["show", "do", "complete", "abandon", "explore", "reject"])
+def test_single_rung_commands_report_not_found(command: str) -> None:
+    runner.invoke(app, ["init"])
+    result = runner.invoke(app, [command, "R999"])
+    assert result.exit_code == 1
+    assert "not found" in result.output
+
+
 def test_show() -> None:
     runner.invoke(app, ["init"])
     result = runner.invoke(app, ["show", "R001"])
@@ -330,3 +427,24 @@ def test_tree() -> None:
     result = runner.invoke(app, ["tree"])
     assert result.exit_code == 0
     assert "foundation" in result.output
+
+
+def test_prompt_prints_system_prompt() -> None:
+    result = runner.invoke(app, ["prompt"])
+    assert result.exit_code == 0
+    assert "ladder" in result.output.lower()
+
+
+def test_prompt_missing_file(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    monkeypatch.setattr(cli_module, "__file__", str(tmp_path / "cli.py"))
+    result = runner.invoke(app, ["prompt"])
+    assert result.exit_code == 0
+    assert "Prompt file not found" in result.output
+
+
+def test_priority_sort_key_falls_back_when_rung_not_in_any_stage() -> None:
+    from ladder.core.models import Effort, Ladder, Rung
+
+    ladder = Ladder(project="test", stages=[])
+    orphan = Rung(id="R999", title="orphan", effort=Effort.SMALL)
+    assert cli_module._priority_sort_key(ladder, orphan) == (999, 0, "R999")
