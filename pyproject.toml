@@ -7,7 +7,7 @@ packages = ["ladder"]
 
 [project]
 name = "ladder-cli"
-version = "0.6.0"
+version = "0.7.0"
 description = "Track every branch, stage, and alternative path in your AI pair-programming sessions."
 readme = "README.md"
 license = {text = "MIT"}
