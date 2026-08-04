@@ -19,6 +19,9 @@ version: 1
   - Note: Abandoned: init placeholder
   - Status: abandoned
 
+- [ ] **R028** — Fix the [x]-checkbox bug → *medium*
+  - Why: see [ref]
+
 ## expansion
 
 - [x] **R003** — HTML export → *medium*
@@ -101,3 +104,7 @@ version: 1
   - Context: Continuation of the systematic coverage-gap hardening pass across the core module
   - Why: Closed the remaining untested branches so cli.py is fully exercised, not just its happy paths
   - Note: Covered: next() empty-unblocked branch + waiting-on-dependencies listing, next() stage-progression nudge, prompt command (happy path + missing-file fallback), abandon, all single-rung not-found paths (show/do/complete/abandon/explore/reject), no-ladder error message, init-twice no-overwrite, add's new-stage/blocker-warning/parent-warning/blocked-by-line branches, and _priority_sort_key's for-else fallback when a rung isn't in any stage. cli.py coverage 79%->99% (only the __main__ guard left, not worth testing). Full suite: 108 passed, ruff/mypy clean.
+
+- [ ] **R027** — Harden renderer.py to 100% + fix real [x]-checkbox-swallowed-by-markup bug in render_rung → *medium*
+  - Context: Continuation of the coverage-gap hardening pass, this time targeting renderer.py's render_status/render_tree/render_rung/render_next_suggestions/render_validation/render_html functions directly
+  - Why: Direct unit tests with full-attribute fixtures caught a genuine terminal-output bug that CLI-level tests never exercised
