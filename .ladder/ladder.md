@@ -70,7 +70,7 @@ version: 1
 - [x] **R017** — Brand color identity across CLI/HTML/README → *medium*
   - Why: Every color was a literal copy of GitHub's Primer palette; replaced with a warm amber/wood identity tied to the ladder theme, applied via a Rich Theme (terminal), CSS variables (HTML export), and shields.io badge colors (README)
 
-- [ ] **R018** — demo.gif is stale against the new brand colors → *medium*
+- [x] **R018** — demo.gif is stale against the new brand colors → *medium*
   - Why: assets/demo.gif still shows the old GitHub-blue palette; needs re-recording, not just a color swap
 
 - [x] **R019** — Enforce status-relay via UserPromptSubmit+Stop hook block → *large*
