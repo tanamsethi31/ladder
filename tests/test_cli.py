@@ -82,6 +82,16 @@ def test_add(tmp_path: Path) -> None:
     assert ladder.get_rung("R003").title == "New Feature"
 
 
+def test_add_title_with_square_brackets_is_not_swallowed_by_markup() -> None:
+    """Regression: console.print interprets a bare '[x]' in an f-string as Rich
+    markup and silently drops it. Any free-text title containing brackets must
+    survive the confirmation echo, not just the stored file."""
+    runner.invoke(app, ["init"])
+    result = runner.invoke(app, ["add", "Fix the [x]-checkbox bug"])
+    assert result.exit_code == 0
+    assert "Fix the [x]-checkbox bug" in result.output
+
+
 def test_add_creates_new_stage_when_missing(tmp_path: Path) -> None:
     runner.invoke(app, ["init"])
     result = runner.invoke(app, ["add", "First billing task", "--stage", "billing"])

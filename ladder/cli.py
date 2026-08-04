@@ -8,6 +8,7 @@ from pathlib import Path
 
 import typer
 from rich.console import Console
+from rich.markup import escape
 from rich.panel import Panel
 from rich.text import Text
 
@@ -233,7 +234,7 @@ def add(
     write_ladder(path, ladder)
     auto_commit(path, f"Add {rung_id}: {title}")
 
-    console.print(f"[success]✓[/success] Added [bold]{rung_id}[/bold]: {title}")
+    console.print(f"[success]✓[/success] Added [bold]{rung_id}[/bold]: {escape(title)}")
     if blockers:
         console.print(f"   Blocked by: {', '.join(blockers)}")
     console.print(f"   Stage: {target_stage.name}  |  Effort: {effort_enum.value}")
@@ -342,7 +343,9 @@ def do(rung_id: str = typer.Argument(..., help="Rung ID to start working on")) -
     rung.status = Status.IN_PROGRESS
     write_ladder(path, ladder)
     auto_commit(path, f"Start work on {rung_id}: {rung.title}")
-    console.print(f"[success]▶[/success] Now working on [bold]{rung_id}[/bold]: {rung.title}")
+    console.print(
+        f"[success]▶[/success] Now working on [bold]{rung_id}[/bold]: {escape(rung.title)}"
+    )
 
 
 @app.command()
@@ -358,7 +361,7 @@ def complete(rung_id: str = typer.Argument(..., help="Rung ID to mark done")) ->
     rung.completed_at = datetime.now()
     write_ladder(path, ladder)
     auto_commit(path, f"Complete {rung_id}: {rung.title}")
-    console.print(f"[success]✓[/success] Completed [bold]{rung_id}[/bold]: {rung.title}")
+    console.print(f"[success]✓[/success] Completed [bold]{rung_id}[/bold]: {escape(rung.title)}")
 
 
 @app.command()
@@ -376,7 +379,7 @@ def note(
     rung.note = text
     write_ladder(path, ladder)
     auto_commit(path, f"Note on {rung_id}")
-    console.print(f"[success]✓[/success] Noted on [bold]{rung_id}[/bold]: {text}")
+    console.print(f"[success]✓[/success] Noted on [bold]{rung_id}[/bold]: {escape(text)}")
 
 
 @app.command()
@@ -420,7 +423,7 @@ def abandon(
         rung.note = f"Abandoned: {reason}"
     write_ladder(path, ladder)
     auto_commit(path, f"Abandon {rung_id}: {rung.title}")
-    console.print(f"[dim]~[/dim] Abandoned [bold]{rung_id}[/bold]: {rung.title}")
+    console.print(f"[dim]~[/dim] Abandoned [bold]{rung_id}[/bold]: {escape(rung.title)}")
 
 
 @app.command()
@@ -435,7 +438,7 @@ def explore(rung_id: str = typer.Argument(..., help="Rung ID to explore")) -> No
     rung.status = Status.EXPLORING
     write_ladder(path, ladder)
     auto_commit(path, f"Explore {rung_id}: {rung.title}")
-    console.print(f"[info]?[/info] Exploring [bold]{rung_id}[/bold]: {rung.title}")
+    console.print(f"[info]?[/info] Exploring [bold]{rung_id}[/bold]: {escape(rung.title)}")
 
 
 @app.command()
@@ -450,7 +453,7 @@ def reject(rung_id: str = typer.Argument(..., help="Rung ID to reject")) -> None
     rung.status = Status.REJECTED
     write_ladder(path, ladder)
     auto_commit(path, f"Reject {rung_id}: {rung.title}")
-    console.print(f"[dim]~[/dim] Rejected [bold]{rung_id}[/bold]: {rung.title}")
+    console.print(f"[dim]~[/dim] Rejected [bold]{rung_id}[/bold]: {escape(rung.title)}")
 
 
 @app.command()

@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
-from html import escape
+from html import escape as html_escape
 
 from rich import box
 from rich.console import Console
+from rich.markup import escape as markup_escape
 from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
@@ -211,18 +212,25 @@ def render_tree(ladder: Ladder, console: Console | None = None) -> None:
     if console is None:
         console = Console(theme=LADDER_THEME)
 
-    root = Tree(f"🪜 [bold]{ladder.project}[/bold]")
+    # Tree.add() parses its string argument as Rich markup just like
+    # console.print, so any free text (title/why/option text) that happens to
+    # contain "[...]" must be escaped before interpolation or it gets silently
+    # swallowed as an unknown tag.
+    root = Tree(f"🪜 [bold]{markup_escape(ladder.project)}[/bold]")
 
     for stage in ladder.stages:
         dot = _stage_dot(stage)
         dot_style = _stage_dot_style(stage)
-        stage_node = root.add(f"[{dot_style}]{dot}[/{dot_style}] [bold]{stage.name}[/bold]")
+        stage_node = root.add(
+            f"[{dot_style}]{dot}[/{dot_style}] [bold]{markup_escape(stage.name)}[/bold]"
+        )
         for rung in stage.rungs:
             emoji = _status_emoji(rung.status)
             effort_color = _effort_style(rung.effort.value)
             style = _rung_style(rung)
             label = (
-                f"{emoji} [bold]{rung.id}[/bold] [{style}]{rung.title}[/{style}] → "
+                f"{emoji} [bold]{rung.id}[/bold] "
+                f"[{style}]{markup_escape(rung.title)}[/{style}] → "
                 f"[{effort_color}]{rung.effort.value}[/{effort_color}]"
             )
             rung_node = stage_node.add(label)
@@ -233,11 +241,11 @@ def render_tree(ladder: Ladder, console: Console | None = None) -> None:
             if rung.parent:
                 rung_node.add(f"[dim]← parent: {rung.parent}[/dim]")
             if rung.why:
-                rung_node.add(f"[dim italic]↳ {rung.why}[/dim italic]")
+                rung_node.add(f"[dim italic]↳ {markup_escape(rung.why)}[/dim italic]")
             for opt in rung.options:
                 mark = "[success.bold]✓[/success.bold]" if opt.chosen else "[dim]○[/dim]"
                 text_style = "success" if opt.chosen else "dim"
-                rung_node.add(f"{mark} [{text_style}]{opt.text}[/{text_style}]")
+                rung_node.add(f"{mark} [{text_style}]{markup_escape(opt.text)}[/{text_style}]")
 
     console.print(root)
 
@@ -261,18 +269,22 @@ def render_rung(rung: Rung, console: Console | None = None) -> None:
     info.add_column(style="dim", justify="right")
     info.add_column()
 
+    # Table cells parse plain strings as Rich markup too (same as console.print
+    # and Tree.add), so any free text (context/why/note) must be wrapped in a
+    # Text object — not passed as a raw string — or a literal "[...]" in it
+    # gets silently swallowed as an unknown tag.
     info.add_row("Effort:", Text(rung.effort.value, style=effort_color))
     info.add_row("Status:", rung.status.value.replace("_", " "))
     if rung.context:
-        info.add_row("Context:", rung.context)
+        info.add_row("Context:", Text(rung.context))
     if rung.why:
-        info.add_row("Why:", rung.why)
+        info.add_row("Why:", Text(rung.why))
     if rung.parent:
-        info.add_row("Parent:", rung.parent)
+        info.add_row("Parent:", Text(rung.parent))
     if rung.blocked_by:
-        info.add_row("Blocked by:", ", ".join(rung.blocked_by))
+        info.add_row("Blocked by:", Text(", ".join(rung.blocked_by)))
     if rung.note:
-        info.add_row("Note:", rung.note)
+        info.add_row("Note:", Text(rung.note))
     if rung.created_at:
         info.add_row("Created:", rung.created_at.strftime("%Y-%m-%d %H:%M"))
     if rung.completed_at:
@@ -286,7 +298,10 @@ def render_rung(rung: Rung, console: Console | None = None) -> None:
         for opt in rung.options:
             check = "[x]" if opt.chosen else "[ ]"
             style = "success" if opt.chosen else "white"
-            console.print(f"  {check} {opt.text}", style=style)
+            # markup=False: check/opt.text can contain literal "[...]" (e.g. a
+            # chosen option's own "[x]" marker), which Rich would otherwise try
+            # to parse as a style tag and silently swallow.
+            console.print(f"  {check} {opt.text}", style=style, markup=False)
 
 
 def render_next_suggestions(
@@ -398,26 +413,25 @@ def render_html(ladder: Ladder) -> str:
             rows = []
             for rung in stage.rungs:
                 css = _rung_css_class(rung)
-                effort = escape(rung.effort.value)
+                effort = html_escape(rung.effort.value)
                 row = [
                     f'<li class="rung {css}">',
                     '<div class="rung-head">',
-                    f'<span class="emoji">{escape(_status_emoji(rung.status))}</span>',
-                    f'<span class="id">{escape(rung.id)}</span>',
-                    f'<span class="title">{escape(rung.title)}</span>',
+                    f'<span class="emoji">{html_escape(_status_emoji(rung.status))}</span>',
+                    f'<span class="id">{html_escape(rung.id)}</span>',
+                    f'<span class="title">{html_escape(rung.title)}</span>',
                     f'<span class="effort {effort}">{effort}</span>',
                     "</div>",
                 ]
                 if rung.why and not rung.is_done:
-                    row.append(f'<p class="why">{escape(rung.why)}</p>')
+                    row.append(f'<p class="why">{html_escape(rung.why)}</p>')
                 if rung.blocked_by:
-                    row.append(
-                        f'<p class="blocked-by">blocked by {escape(", ".join(rung.blocked_by))}</p>'
-                    )
+                    blockers = html_escape(", ".join(rung.blocked_by))
+                    row.append(f'<p class="blocked-by">blocked by {blockers}</p>')
                 if rung.options:
                     opts = "".join(
                         f'<li class="{"chosen" if o.chosen else ""}">'
-                        f"{'✓' if o.chosen else '○'} {escape(o.text)}</li>"
+                        f"{'✓' if o.chosen else '○'} {html_escape(o.text)}</li>"
                         for o in rung.options
                     )
                     row.append(f'<ul class="options">{opts}</ul>')
@@ -427,8 +441,8 @@ def render_html(ladder: Ladder) -> str:
             sections.append(
                 f'<details class="stage"{" open" if not stage.is_complete else ""}>'
                 f'<summary><span class="dot {_stage_dot_css_class(stage)}">'
-                f"{escape(_stage_dot(stage))}</span> "
-                f'<span class="stage-name">{escape(stage.name)}</span>'
+                f"{html_escape(_stage_dot(stage))}</span> "
+                f'<span class="stage-name">{html_escape(stage.name)}</span>'
                 f'<span class="stage-count">{done}/{total}</span></summary>'
                 f'<div class="bar"><div class="bar-fill" style="width:{percent}%"></div></div>'
                 f'<ul class="rungs">{"".join(rows)}</ul>'
@@ -436,14 +450,15 @@ def render_html(ladder: Ladder) -> str:
             )
         stages_html = "".join(sections)
 
+    project = html_escape(ladder.project)
     return f"""<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="{escape(ladder.project)} — decision ladder, exported from Ladder">
+<meta name="description" content="{project} — decision ladder, exported from Ladder">
 <link rel="icon" href="{_FAVICON}">
-<title>{escape(ladder.project)} — ladder</title>
+<title>{project} — ladder</title>
 <style>
   :root {{
     --bg: #181310; --surface: #221b16; --border: #362c23; --text: #efe4d3; --dim: #a89a86;
@@ -522,7 +537,7 @@ def render_html(ladder: Ladder) -> str:
 </style>
 </head>
 <body>
-<h1>🪜 {escape(ladder.project)}</h1>
+<h1>🪜 {project}</h1>
 <div class="stats">
   <div class="stat done"><b>{ladder.completed_count}</b><span>done</span></div>
   <div class="stat active"><b>{ladder.in_progress_count}</b><span>active</span></div>
