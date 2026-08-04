@@ -119,27 +119,20 @@ This project dogfoods itself — its own `.ladder/ladder.md` tracks its own road
 ```
 $ ladder status
 
-🪜 ladder  v1  16 done · 0 active · 2 exploring · 1 open · 0 blocked
+🪜 ladder  v1  25 done · 0 active · 1 exploring · 0 open · 0 blocked
 
 $ ladder next
 
 🎯 Suggested next rungs
 
-1. R018  demo.gif is stale against the new brand colors  → medium
-   assets/demo.gif still shows the old GitHub-blue palette; needs re-recording,
-   not just a color swap
-
-2. R021  Ambiguous pronoun references to rungs are unreliable  → medium
+1. R021  Ambiguous pronoun references to rungs are unreliable  → medium
    Discovered via R008's A/B test: 'why is that still undecided' with multiple
-   candidate rungs failed in both terse and full injection conditions — a real
-   gap, unrelated to which one got picked
+   candidate rungs failed in both terse (derailed into logging talk, never
+   answered) and full (confidently named the wrong rung) conditions. Not a
+   terse-vs-full issue - a real, separate gap in resolving vague references
+   when several rungs could match.
 
-3. R014  Subtle/prose-only option capture  → large
-   Both Claude's own judgment and the Stop-hook regex heuristic only catch
-   list-formatted or trigger-phrase options; a recommendation woven into plain
-   prose (no list, no 'either/or') likely still slips through both layers
-
-💡 `plugin` is 11/14 done — consider finishing it before moving on.
+💡 `plugin` is 20/21 done — consider finishing it before moving on.
 ```
 
 Small, well-understood work sorted ahead of bigger bets, automatically. R008
