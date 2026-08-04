@@ -7,11 +7,14 @@ actually laid out)."""
 
 from __future__ import annotations
 
+import importlib
+import sys
 from pathlib import Path
 
 import git as gitpython
 import pytest
 
+import ladder.core.git as git_module
 from ladder.core.git import auto_commit
 
 
@@ -76,11 +79,25 @@ def test_no_git_repo_returns_false_no_exception(tmp_path: Path) -> None:
 def test_has_git_false_returns_false_immediately(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    import ladder.core.git as git_module
-
     monkeypatch.setattr(git_module, "HAS_GIT", False)
     ladder_file = tmp_path / ".ladder" / "ladder.md"
     ladder_file.parent.mkdir()
     ladder_file.write_text("content")
 
     assert auto_commit(ladder_file, "test") is False
+
+
+def test_import_error_sets_has_git_false(monkeypatch: pytest.MonkeyPatch) -> None:
+    """gitpython is a hard pip dependency, but GitPython itself raises
+    ImportError at import time if the `git` executable isn't on PATH (package
+    installed fine, binary missing — e.g. a stripped-down container). Forces
+    that by blanking sys.modules["git"] and reloading, so the module's
+    top-level try/except actually re-runs instead of just flipping the flag."""
+    monkeypatch.setitem(sys.modules, "git", None)
+    try:
+        importlib.reload(git_module)
+        assert git_module.HAS_GIT is False
+    finally:
+        monkeypatch.undo()
+        importlib.reload(git_module)
+        assert git_module.HAS_GIT is True

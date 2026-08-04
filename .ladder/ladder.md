@@ -19,9 +19,6 @@ version: 1
   - Note: Abandoned: init placeholder
   - Status: abandoned
 
-- [ ] **R028** — Fix the [x]-checkbox bug → *medium*
-  - Why: see [ref]
-
 ## expansion
 
 - [x] **R003** — HTML export → *medium*
@@ -105,7 +102,12 @@ version: 1
   - Why: Closed the remaining untested branches so cli.py is fully exercised, not just its happy paths
   - Note: Covered: next() empty-unblocked branch + waiting-on-dependencies listing, next() stage-progression nudge, prompt command (happy path + missing-file fallback), abandon, all single-rung not-found paths (show/do/complete/abandon/explore/reject), no-ladder error message, init-twice no-overwrite, add's new-stage/blocker-warning/parent-warning/blocked-by-line branches, and _priority_sort_key's for-else fallback when a rung isn't in any stage. cli.py coverage 79%->99% (only the __main__ guard left, not worth testing). Full suite: 108 passed, ruff/mypy clean.
 
-- [ ] **R027** — Harden renderer.py to 100% + fix real [x]-checkbox-swallowed-by-markup bug in render_rung → *medium*
+- [x] **R027** — Harden renderer.py to 100% + fix real [x]-checkbox-swallowed-by-markup bug in render_rung → *medium*
   - Context: Continuation of the coverage-gap hardening pass, this time targeting renderer.py's render_status/render_tree/render_rung/render_next_suggestions/render_validation/render_html functions directly
   - Why: Direct unit tests with full-attribute fixtures caught a genuine terminal-output bug that CLI-level tests never exercised
   - Note: Also found and fixed the same markup-swallowing bug in 3 more places: render_tree (title/why/options/project/stage-name via Tree.add), render_rung's info table (context/why/parent/blocked_by/note via Table.add_row), and 7 confirmation-echo call sites in cli.py (add/do/complete/note/abandon/explore/reject all interpolate free text into a markup-enabled console.print). Root cause: Rich parses plain strings as markup in console.print, Tree.add, and Table cells alike, so any '[...]' in an AI-written title/why/note was being silently swallowed, not just the [x]/[  ] checkbox glyphs. Fixed via Text()-wrapping (render_rung) and rich.markup.escape() (render_tree, cli.py confirmations) at every site free text reaches a markup-parsing call. Confirmed against real terminal output, not just recorded console. renderer.py + cli.py both at 100%/99%. 125 tests passed.
+
+- [x] **R029** — Harden git.py to 100%: cover the ImportError fallback branch → *small*
+  - Context: Closing the last coverage gap in the core module set
+  - Why: gitpython is a hard pip dependency, but it still raises ImportError at import time if the git binary itself is missing from PATH (e.g. a stripped container) -- worth actually testing, not just assuming
+  - Note: git.py 91%->100%. Simulated the ImportError branch for real by blanking sys.modules['git'] and importlib.reload()-ing the module so the top-level try/except actually re-runs, rather than just monkeypatching the HAS_GIT flag after the fact (that only covers auto_commit's runtime check, not the import-time branch itself). Restores real state in a finally block. All core modules (models/parser/renderer/git) now 100%, cli.py 99% (only __main__ guard left). Also cleaned up two bookkeeping slips from the R027 batch: a stray test rung (R028) that leaked into the real ladder.md from a non-isolated manual verification run, and R027 itself never actually being marked done despite being finished.
