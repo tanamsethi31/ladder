@@ -72,6 +72,7 @@ version: 1
 
 - [x] **R018** — demo.gif is stale against the new brand colors → *medium*
   - Why: assets/demo.gif still shows the old GitHub-blue palette; needs re-recording, not just a color swap
+  - Note: Regenerated with vhs (charmbracelet), scripted this time via a committed assets/demo.tape (the original wasn't committed, so it wasn't reproducible). Fully CLI-driven -- init, abandon the generic placeholder, two adds building a real blocked-by chain, status, next -- no manual markdown injection, so anyone with vhs + ladder installed can regenerate it verbatim. Custom VHS theme JSON matches the actual brand palette (LADDER_THEME/HTML CSS vars) instead of a generic terminal theme. 18.8s, 615KB, close to the original's footprint.
 
 - [x] **R019** — Enforce status-relay via UserPromptSubmit+Stop hook block → *large*
   - Why: Rule 11 (hard, non-negotiable, paste 100%) was violated on the very first real dogfood test - I paraphrased instead of pasting, twice. Prompt wording alone is proven unreliable; needed actual enforcement that blocks the turn until the real output is verifiably present
