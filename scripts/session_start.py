@@ -35,7 +35,11 @@ if not summary:
 context = (
     f"Ladder found in this project: {summary}\n\n"
     "Follow the ladder-tracking skill this session: read .ladder/ladder.md before "
-    "presenting multiple options, and log new options/decisions as rungs as you go."
+    "presenting multiple options, and log new options/decisions as rungs as you go. "
+    'If a question uses a vague reference ("that", "it", "the thing we were '
+    "deciding\") that could match more than one open or exploring rung, don't guess "
+    "which one before checking — run `ladder status`/`tree` and either name the one "
+    "specific rung you're confident matches or ask which one."
 )
 print(
     json.dumps(
