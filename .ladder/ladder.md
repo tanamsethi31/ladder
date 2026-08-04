@@ -80,9 +80,8 @@ version: 1
 - [x] **R020** — Stop hook false-positive: bare lists triggered constantly → *small*
   - Why: Structural '2+ list items' check fired on nearly every multi-point response (status recaps, step lists) regardless of content; removed it, kept only explicit choice-language patterns
 
-- [?] **R021** — Ambiguous pronoun references to rungs are unreliable → *medium*
+- [x] **R021** — Ambiguous pronoun references to rungs are unreliable → *medium*
   - Why: Discovered via R008's A/B test: 'why is that still undecided' with multiple candidate rungs failed in both terse (derailed into logging talk, never answered) and full (confidently named the wrong rung) conditions. Not a terse-vs-full issue - a real, separate gap in resolving vague references when several rungs could match.
-  - Status: exploring
 
 - [x] **R022** — system.md (universal prompt) was stale vs SKILL.md → *medium*
   - Why: Missing rule 11 entirely (the hard 'full' override) and the Useful commands section - anyone using ladder via Cursor/Copilot/ChatGPT copy-paste had strictly weaker protection against the exact paraphrasing failure I hit myself, with zero hook backup to compensate since that's Claude-Code-specific
