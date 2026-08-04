@@ -57,6 +57,14 @@ vanish into scrollback — the ladder captures them instead.
     paste it anyway. Rule 7 still applies after the fence: always close with the
     brief open-rungs summary, even though you just showed everything — don't skip
     it just because the full dump already contains that information.
+12. **If a reference is ambiguous** — "why is that still undecided", "what about
+    the other one", or any pronoun/vague phrase that could plausibly match more
+    than one open or exploring rung — don't guess, and don't drift into a
+    different topic instead of answering. Run `ladder --no-color status` (or
+    `tree`) to see the real candidates first, then either name the one specific
+    rung you're confident matches (with its ID) or ask which one the user means.
+    A wrong guess or a derailed non-answer is worse than one clarifying
+    question.
 
 If you're running as the Claude Code plugin, two hooks back up rules 8/9/11 with
 actual enforcement, not just reminders — a plain instruction (even one worded as
